@@ -8,9 +8,9 @@ import java.util.List;
 
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.serializers.SQLInstance;
-import mc.alk.tracker.test.Cache;
-import mc.alk.tracker.test.Cache.CacheObject;
-import mc.alk.tracker.test.Cache.CacheSerializer;
+import mc.alk.tracker.util.Cache;
+import mc.alk.tracker.util.Cache.CacheObject;
+import mc.alk.tracker.util.Cache.CacheSerializer;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
 

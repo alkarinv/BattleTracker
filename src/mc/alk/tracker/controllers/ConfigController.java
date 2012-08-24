@@ -13,6 +13,7 @@ public class ConfigController {
 	static File f = null;
 	
 	public static boolean getBoolean(String node) {return config.getBoolean(node, false);}
+	public static boolean getBoolean(String node,boolean b) {return config.getBoolean(node, b);}
 	public static  String getString(String node) {return config.getString(node,null);}
 	public static  String getString(String node,String def) {return config.getString(node,def);}
 	public static int getInt(String node,int i) {return config.getInt(node, i);}

@@ -2,14 +2,16 @@ package mc.alk.tracker;
 
 import java.util.HashMap;
 
-import mc.alk.tracker.TrackerInterface.DBConnectionException;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.TrackerController;
+import mc.alk.tracker.controllers.TrackerImpl;
+import mc.alk.tracker.controllers.TrackerImpl.DBConnectionException;
 import mc.alk.tracker.executors.PVPExecutor;
 import mc.alk.tracker.listeners.BTEntityListener;
 import mc.alk.tracker.listeners.BTPlayerListener;
 import mc.alk.tracker.listeners.BTPluginListener;
+import mc.alk.tracker.ranking.RankingCalculator;
 
 import com.alk.battleCore.MCPlugin;
 
@@ -17,6 +19,7 @@ public class Tracker extends MCPlugin{
 	static Tracker plugin;
 	TrackerController sc;
 	static HashMap<String, TrackerInterface> interfaces = new HashMap<String,TrackerInterface>();
+
 	@Override
 	public void onEnable() {
 		super.onEnable();
@@ -31,15 +34,10 @@ public class Tracker extends MCPlugin{
 		getCommand("battleTracker").setExecutor(new PVPExecutor(getInterface(Defaults.PVP_INTERFACE)));
 		getCommand("pvp").setExecutor(new PVPExecutor(getInterface(Defaults.PVP_INTERFACE)));
 		getCommand("pve").setExecutor(new PVPExecutor(getInterface(Defaults.PVE_INTERFACE)));
-		BTPluginListener.loadPlugins();
-//		Timer timer = new Timer();
-//		timer.scheduleAtFixedRate(new TimerTask(){
-//			public void run(){
-//				saveStats();
-//			}
-//		}, 0, Defaults.SAVE_EVERY_X_SECONDS * 1000);
 
+		BTPluginListener.loadPlugins();
 	}
+
 	@Override
 	public void onDisable(){
 		saveStats();
@@ -57,15 +55,24 @@ public class Tracker extends MCPlugin{
 		}
 	}
 
-	public static TrackerInterface getInterface(String name){
+	public static TrackerInterface getInterface(String interfaceName){
+		return getInterface(interfaceName,null);
+	}
+
+	public static TrackerInterface getInterface(String interfaceName, RankingCalculator rankingCalculator){
 		try {
-			name = name.toLowerCase();
-			if (!interfaces.containsKey(name)){
-				interfaces.put(name, new TrackerInterface(name));}
-			return interfaces.get(name);
+			interfaceName = interfaceName.toLowerCase();
+			if (!interfaces.containsKey(interfaceName)){
+				if (rankingCalculator == null)
+					interfaces.put(interfaceName, new TrackerImpl(interfaceName));
+				else 
+					interfaces.put(interfaceName, new TrackerImpl(interfaceName,rankingCalculator));
+			}
+			return interfaces.get(interfaceName);
 		} catch (DBConnectionException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+	
 }

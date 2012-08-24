@@ -1,3 +1,6 @@
 A SQL tracker for minecraft.  allows overall stats, tallies, and  individual records.
 
+version: 2.1 : Added support for sqlite.
+Added new methods for the BattleTracker Interface
+
 version: 2.0

@@ -93,8 +93,10 @@ public class BTEntityListener implements Listener{
 				if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
 					killerPlayer = true;
 					killer = ((Player) proj.getShooter()).getName();
-				} else { /// projectile shot by some mob, or other source
+				} else if (proj.getShooter() != null){ /// projectile shot by some mob, or other source
 					killer = proj.getShooter().getType().getName();
+				} else {
+					killer = "unknown"; /// projectile was null?
 				}
 			} else { /// Killer is not a player
 				killer = edbee.getDamager().getType().getName();
@@ -112,19 +114,19 @@ public class BTEntityListener implements Listener{
 			return;
 		/// Decide what to do
 		if (targetPlayer && killerPlayer){
-			addRecord(playerTi,killer,target,WLT.WIN,true);
-			//			playerTi.addPlayerRecord(killer,target,WLTIE.WIN);
-			if (ConfigController.getBoolean("sendPVPDeathMessages"))
+			if (ConfigController.getBoolean("trackPvP",true))
+				addRecord(playerTi,killer,target,WLT.WIN,true);
+
+			if (ConfigController.getBoolean("sendPVPDeathMessages",true))
 				MessageController.sendDeathMessage(getDeathMessage(killer,target,isMelee,playerTi,killingWeapon));
 		} else if (!targetPlayer && !killerPlayer){ /// mobs killing each other, or dying by traps
 			/// Do nothing
-		} else { /// One player, One other
+		} else if (ConfigController.getBoolean("trackPvE",true)){ /// One player, One other
 			if (!killerPlayer){
 				killer = killer.replaceAll("Craft", "");}
 			if (!targetPlayer){
 				target = target.replaceAll("Craft", "");}
 			addRecord(worldTi, killer,target,WLT.WIN, false);
-			//			worldTi.addPlayerRecord(killer, target, WLTIE.WIN, false);
 		}		
 	}
 

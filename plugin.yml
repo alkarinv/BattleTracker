@@ -2,38 +2,20 @@ name: BattleTracker
 
 main: mc.alk.tracker.Tracker
 
-version: 2.0.2
+version: 2.1
 
 author: Alkarin
-depend: [BattleCore]
-softdepend: [Herochat]
+softdepend: [BattleCore,Herochat]
 description: A tracker for PvP player related events
 commands:
     battleTracker:
         aliases: [bt,bthelp]
         description: Show help menu
         usage: /bt
-    totalkills:
-        aliases: tk
-        description: Shows the total kills for players
-        usage: /tk [player], or /tk top [x] 
-    streak:
-        description: Shows the kill streak for a player
-        usage: /streak [player], or /streak top [x] 
-    killdeath:
-        aliases: kd
-        description: Show the kill/death ratio
-        usage: /kd [player], or /kd top [x] 
     pvp:
         description: Show how players have matched up
         usage: /pvp player1 [player2]
     pve:
         description: Show how players have matched up vs mobs/environment
         usage: /pvp player1 [player2]
-    battleScore:
-        aliases: bs
-        description: Shows the Battle Score for a player
-        usage: /bs [player], or /bs top [x] 
-    stats:
-        usage: "/stats"
     

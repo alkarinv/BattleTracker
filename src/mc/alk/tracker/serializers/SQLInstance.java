@@ -51,6 +51,7 @@ public class SQLInstance extends SQLSerializer{
 	static final public String STREAK = "Streak";
 	static final public String MAXSTREAK = "maxStreak";
 	static final public String ELO = "Elo";
+	static final public String MAXELO = "maxElo";
 	static final public String COUNT = "Count";
 	static final public String DATE = "Date";
 
@@ -67,17 +68,19 @@ public class SQLInstance extends SQLSerializer{
 	String drop_tables;
 
 	String create_individual_table, create_versus_table, create_member_table,create_overall_table;
+	String create_individual_table_idx, create_versus_table_idx, create_member_table_idx,create_overall_table_idx;
 
 	String get_overall_totals, insert_overall_totals;
-	String get_topx_wins, get_topx_losses;
+	String get_topx_wins, get_topx_losses, get_topx_ties;
 	String get_topx_streak,get_topx_maxstreak;
-	String get_topx_kd, get_topx_elo;
+	String get_topx_kd, get_topx_elo, get_topx_maxelo;
 	String save_ind_record, get_ind_record;
 	String insert_versus_record, get_versus_record;
 	String get_versus_records, getx_versus_records;
+	String truncate_all_tables;
 
 	public static final String get_members = "select "+NAME+" from " + MEMBER_TABLE + " where " + TEAMID +" = ?";
-	public static final String save_members = "insert ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
+	String save_members;
 
 	String tableName;
 
@@ -96,14 +99,6 @@ public class SQLInstance extends SQLSerializer{
 		VERSUS_TABLE = TABLE_PREFIX+tableName+VERSUS_TABLE_SUFFIX;
 		OVERALL_TABLE = TABLE_PREFIX+tableName+OVERALL_TABLE_SUFFIX;
 		INDIVIDUAL_TABLE = TABLE_PREFIX+tableName+INDIVIDUAL_TABLE_SUFFIX;
-		create_individual_table = "CREATE TABLE IF NOT EXISTS " + INDIVIDUAL_TABLE +" ("+
-				ID1 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
-				ID2 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
-				DATE + " DATETIME," +
-				WLTIE + " INTEGER UNSIGNED," +
-				"PRIMARY KEY (" + ID1 +", " + ID2 + "," + DATE + "), INDEX USING HASH (" + ID1 +"),INDEX USING BTREE (" + DATE +")) " +
-				"DEFAULT CHARACTER SET = utf8 "+
-				"COLLATE = utf8_general_ci";
 
 		create_overall_table = "CREATE TABLE IF NOT EXISTS " + OVERALL_TABLE +" ("+
 				TEAMID + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
@@ -114,10 +109,9 @@ public class SQLInstance extends SQLSerializer{
 				STREAK + " INTEGER UNSIGNED," +
 				MAXSTREAK + " INTEGER UNSIGNED," +
 				ELO + " INTEGER UNSIGNED DEFAULT " + 1250+"," +
+				MAXELO + " INTEGER UNSIGNED DEFAULT " + 1250+"," +
 				COUNT + " INTEGER UNSIGNED DEFAULT 1," +
-				"PRIMARY KEY (" + TEAMID +")) " + 
-				"DEFAULT CHARACTER SET = utf8 "+
-				"COLLATE = utf8_general_ci";
+				"PRIMARY KEY (" + TEAMID +")) "; 
 
 		create_versus_table = "CREATE TABLE IF NOT EXISTS " + VERSUS_TABLE +" ("+
 				ID1 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
@@ -125,44 +119,90 @@ public class SQLInstance extends SQLSerializer{
 				WINS + " INTEGER UNSIGNED ," +
 				LOSSES + " INTEGER UNSIGNED," +
 				TIES + " INTEGER UNSIGNED," +
-				"PRIMARY KEY ("+ID1 +", "+ID2+"), INDEX USING HASH ("+ID1+")) " +
-				"DEFAULT CHARACTER SET = utf8 "+
-				"COLLATE = utf8_general_ci";
+				"PRIMARY KEY ("+ID1 +", "+ID2+"))";
 
 		create_member_table = "CREATE TABLE IF NOT EXISTS " + MEMBER_TABLE +" ("+
 				TEAMID + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
 				NAME + " VARCHAR(" + MAX_NAME_LENGTH +") NOT NULL ," +
-				"PRIMARY KEY (" + TEAMID +","+NAME+"), INDEX USING HASH("+TEAMID+")) " + 
-				"DEFAULT CHARACTER SET = utf8 "+
-				"COLLATE = utf8_general_ci";
+				"PRIMARY KEY (" + TEAMID +","+NAME+"))";
 
 
 		get_topx_wins = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+WINS+" DESC LIMIT ?";
 		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+LOSSES+" DESC LIMIT ? ";		
+		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+TIES+" DESC LIMIT ? ";		
 		get_topx_streak = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+STREAK +" DESC LIMIT ?";
 		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
 		get_topx_elo = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+ELO+" DESC LIMIT ?";
+		get_topx_maxelo = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXELO+" DESC LIMIT ?";
 		get_topx_kd = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY KD DESC LIMIT ?";
 
-		insert_overall_totals = "INSERT INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
-				WINS + " = VALUES(" + WINS +"), " + LOSSES +"=VALUES(" + LOSSES + "), " + TIES +"=VALUES(" + TIES + "), " +
-				STREAK +"= VALUES(" + STREAK+")," +MAXSTREAK +"= VALUES(" + MAXSTREAK+")," + ELO +"= VALUES(" + ELO + ")";
 		get_overall_totals = "select * from " + OVERALL_TABLE + " where " + TEAMID +" = ?";
 
-		insert_versus_record = "insert into "+VERSUS_TABLE+" VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE " + 
-				WINS + " = VALUES(" + WINS +"), " + LOSSES +"=VALUES(" + LOSSES + "), " + TIES +"=VALUES(" + TIES + ")";
 		get_versus_record = "select "+WINS+","+LOSSES+","+TIES+" from "+VERSUS_TABLE+" WHERE "+ID1+"=? AND "+ID2+"=?";
 
-		save_ind_record = "insert ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
 		getx_versus_records = "select * from "+INDIVIDUAL_TABLE+" WHERE ("+ID1+"=? AND "+ID2+"=?) OR ("+ID1+"=? AND "+ID2+"=?) ORDER BY "+DATE+" DESC LIMIT ?";
+
+		truncate_all_tables = "truncate table " +OVERALL_TABLE+"; truncate table " + VERSUS_TABLE+"; truncate table "+INDIVIDUAL_TABLE;
+
+		switch(TYPE){
+		case MYSQL:
+			create_individual_table = "CREATE TABLE IF NOT EXISTS " + INDIVIDUAL_TABLE +" ("+
+					ID1 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
+					ID2 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
+					DATE + " DATETIME," +
+					WLTIE + " INTEGER UNSIGNED," +
+					"PRIMARY KEY (" + ID1 +", " + ID2 + "," + DATE + "), "+
+					"INDEX USING HASH (" + ID1 +"),INDEX USING BTREE (" + DATE +")) ";
+
+			create_member_table_idx = "CREATE INDEX "+MEMBER_TABLE+"_idx ON " +MEMBER_TABLE+" ("+TEAMID+") USING HASH";
+			create_versus_table_idx = "CREATE INDEX "+VERSUS_TABLE+"_idx ON " +VERSUS_TABLE+" ("+ID1+") USING HASH";
+
+			insert_overall_totals = "INSERT INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?) " +
+					"ON DUPLICATE KEY UPDATE " +
+					WINS + " = VALUES(" + WINS +"), " + LOSSES +"=VALUES(" + LOSSES + "), " + TIES +"=VALUES(" + TIES + "), " +
+					STREAK +"= VALUES(" + STREAK+")," +MAXSTREAK +"= VALUES(" + MAXSTREAK+")," +
+					ELO +"= VALUES(" + ELO + ")," +  MAXELO +"= VALUES(" + MAXELO+")";
+
+			insert_versus_record = "insert into "+VERSUS_TABLE+" VALUES(?,?,?,?,?) " + 
+					"ON DUPLICATE KEY UPDATE " + 
+					WINS + " = VALUES(" + WINS +"), " + LOSSES +"=VALUES(" + LOSSES + "), " + TIES +"=VALUES(" + TIES + ")";
+
+			save_ind_record = "insert ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
+			save_members = "insert ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
+			
+			break;
+		case SQLITE:
+			create_individual_table = "CREATE TABLE IF NOT EXISTS " + INDIVIDUAL_TABLE +" ("+
+					ID1 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
+					ID2 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
+					DATE + " DATETIME," +
+					WLTIE + " INTEGER UNSIGNED," +
+					"PRIMARY KEY (" + ID1 +", " + ID2 + "," + DATE + ")) ";
+
+			create_member_table_idx = "CREATE UNIQUE INDEX "+MEMBER_TABLE+"_idx ON " +MEMBER_TABLE+" ("+TEAMID+")";
+			create_versus_table_idx = "CREATE UNIQUE INDEX "+VERSUS_TABLE+"_idx ON " +VERSUS_TABLE+" ("+ID1+")";
+
+			insert_versus_record = "insert or replace into "+VERSUS_TABLE+" VALUES(?,?,?,?,?)";
+			
+			save_ind_record = "insert or ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
+
+			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?) ";
+
+//			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?," +
+//					"(select "+NAME+" from "+OVERALL_TABLE+" where "+TEAMID+"=?),"+
+//					"?,?,? ,?,? ,?,?,"+
+//					"(select "+COUNT+" from "+OVERALL_TABLE+" where "+TEAMID+"=?))";
+			
+			save_members = "insert or ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
+		}
 
 		try {
 			Connection con = getConnection();  /// Our database connection
 
-			createTable(con, VERSUS_TABLE, create_versus_table,null);
-			createTable(con, OVERALL_TABLE, create_overall_table,null);
-			createTable(con, INDIVIDUAL_TABLE,create_individual_table,null);
-			createTable(con, MEMBER_TABLE,create_member_table,null);
+			createTable(con, VERSUS_TABLE, create_versus_table, create_versus_table_idx);
+			createTable(con, OVERALL_TABLE, create_overall_table);
+			createTable(con, INDIVIDUAL_TABLE,create_individual_table,create_individual_table_idx);
+			createTable(con, MEMBER_TABLE,create_member_table,create_member_table_idx);
 
 			closeConnection(con);
 		} catch (Exception e){
@@ -173,27 +213,52 @@ public class SQLInstance extends SQLSerializer{
 	}
 
 	public List<Stat> getTopXWins(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
+
 		RSCon rscon = executeQuery(get_topx_wins,teamcount,x);
 		return createStatList(rscon);
 	}
 	public List<Stat> getTopXLosses(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_losses,teamcount,x);
 		return createStatList(rscon);
 	}
+	public List<Stat> getTopXTies(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
+		RSCon rscon = executeQuery(get_topx_ties,teamcount,x);
+		return createStatList(rscon);
+	}
 	public List<Stat> getTopXStreak(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_streak,teamcount,x);
 		return createStatList(rscon);
 	}
 	public List<Stat> getTopXMaxStreak(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_maxstreak,teamcount,x);
 		return createStatList(rscon);
 	}
 
-	public List<Stat> getTopXElo(int x, int teamcount) {
+	public List<Stat> getTopXRanking(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_elo,teamcount,x);
 		return createStatList(rscon);
 	}
+	public List<Stat> getTopXMaxRanking(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
+		RSCon rscon = executeQuery(get_topx_maxelo,teamcount,x);
+		return createStatList(rscon);
+	}
 	public List<Stat> getTopXRatio(int x, int teamcount) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_kd,teamcount,x);
 		return createStatList(rscon);
 	}
@@ -243,9 +308,10 @@ public class SQLInstance extends SQLSerializer{
 		int maxStreak = rs.getInt(MAXSTREAK);
 		int ties = rs.getInt(TIES);
 		int elo = rs.getInt(ELO);
+		int maxElo = rs.getInt(MAXELO);
 		int count = rs.getInt(COUNT);
 		//		System.out.println("---------------------------------------------");
-		if (DEBUG) System.out.println("name =" + name + " id=" + id +" elo=" + elo);
+		if (DEBUG) System.out.println("name =" + name + " id=" + id +" ranking=" + elo +" count="+count);
 		if (count == 1){
 			ts = new PlayerStat(id);
 		} else {
@@ -270,9 +336,10 @@ public class SQLInstance extends SQLSerializer{
 		ts.setLosses(deaths);
 		ts.setStreak(streak);
 		ts.setTies(ties);
-		ts.setElo(elo);
+		ts.setRanking(elo);
 		ts.setCount(count);
 		ts.setMaxStreak(maxStreak);
+		ts.setMaxRanking(maxElo);
 
 		if (DEBUG) System.out.println("stat = " + ts);
 		return ts;
@@ -316,11 +383,11 @@ public class SQLInstance extends SQLSerializer{
 		if (DEBUG) System.out.println("SaveIndividual " + id);
 		List<List<Object>> batch = new ArrayList<List<Object>>();
 		for (String oid : indRecords.keySet()){
-//			System.out.println("oid =" +oid);
+			//			System.out.println("oid =" +oid);
 			HashSet<Timestamp> times = new HashSet<Timestamp>();
-			
+
 			for (WLTRecord wlt: indRecords.get(oid)){
-//				System.out.println("oid =  wlt = " +   wlt);
+				//				System.out.println("oid =  wlt = " +   wlt);
 				switch(wlt.wlt){
 				case LOSS: /// do nothing, let the winner do the saving
 					continue;
@@ -330,7 +397,6 @@ public class SQLInstance extends SQLSerializer{
 				}
 				Timestamp ts = new Timestamp((wlt.date /1000)*1000);
 				while (times.contains(ts)){ /// Since mysql can only handle seconds, increment to first free second
-//					System.out.println("CONNNNNNNNNNNTAINS " + ts +"   date ");
 					ts.setTime(ts.getTime()+1000);
 				}
 				times.add(ts);
@@ -356,15 +422,16 @@ public class SQLInstance extends SQLSerializer{
 			String name= stat.getName();
 			if (name!= null && name.length() > TEAM_NAME_LENGTH){
 				name = null;}
-			if (stat.getElo() < 0 || stat.getElo() > 200000){
-				Log.err("ELO OUT OF RANGE " + stat.getElo() +"   stat=" + stat);
+			if (stat.getRanking() < 0 || stat.getRanking() > 200000){
+				Log.err("ELO OUT OF RANGE " + stat.getRanking() +"   stat=" + stat);
 			}
 			batch.add(Arrays.asList(new Object[]{stat.getStrID(),name, stat.getWins(), stat.getLosses(),stat.getTies(),
-					stat.getStreak(),stat.getMaxStreak(), stat.getElo(), stat.getCount()}));
+					stat.getStreak(),stat.getMaxStreak(), stat.getRanking(),stat.getMaxRanking(), stat.getCount()}));
 		}
 		try{
 			executeBatch(insert_overall_totals, batch);
 		} catch (Exception e){
+			System.err.println("ERROR SAVING TOTALS");
 			e.printStackTrace();
 
 			for (Stat stat: stats){
@@ -373,6 +440,7 @@ public class SQLInstance extends SQLSerializer{
 
 		}
 	}
+
 	public void saveMembers(String strid, List<String> players) {
 		if (players == null)
 			return ;
@@ -395,7 +463,7 @@ public class SQLInstance extends SQLSerializer{
 		}
 		return or;
 	}
-	
+
 	private WLTRecord parseWLTRecord(ResultSet rs) {
 		try{
 			Timestamp ts = rs.getTimestamp(DATE);
@@ -409,6 +477,8 @@ public class SQLInstance extends SQLSerializer{
 
 
 	public List<WLTRecord> getVersusRecords(String id, String opponentId, int x) {
+		if (x <= 0){
+			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(getx_versus_records,id,opponentId,opponentId, id, x);
 		List<WLTRecord> list = new ArrayList<WLTRecord>();
 		if (rscon != null){
@@ -433,7 +503,7 @@ public class SQLInstance extends SQLSerializer{
 		}
 		return list;
 	}
-	
+
 	public void realsaveVersusRecords(Collection<VersusRecord> types) {
 		if (types==null)
 			return;
@@ -448,5 +518,9 @@ public class SQLInstance extends SQLSerializer{
 			batch.add(Arrays.asList(new Object[]{or.ids.get(0),or.ids.get(1),or.wins,or.losses,or.ties}));
 		}
 		executeBatch(insert_versus_record,batch);
+	}
+
+	public void deleteTables(){
+		this.executeQuery(truncate_all_tables);
 	}
 }

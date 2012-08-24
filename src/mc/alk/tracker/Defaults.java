@@ -6,4 +6,6 @@ public class Defaults {
 	public static final String LANGUAGE = "english";
 	public static final String PVP_INTERFACE = "pvp";
 	public static final String PVE_INTERFACE = "pve";
+	
+	
 }

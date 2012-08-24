@@ -3,24 +3,25 @@ package mc.alk.tracker.objects;
 import java.util.Collections;
 import java.util.List;
 
-import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.controllers.EloCalculator;
+import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
-import mc.alk.tracker.test.Cache.CacheObject;
+import mc.alk.tracker.ranking.EloCalculator;
+import mc.alk.tracker.util.Cache.CacheObject;
 
 import org.bukkit.entity.Player;
 
 public abstract class Stat extends CacheObject<String,Stat>{
 	protected String strid = null;
 	protected String name;
-	protected float elo = EloCalculator.DEFAULT_ELO;
+	protected float ranking = EloCalculator.DEFAULT_ELO;
+	protected float maxRanking = ranking;
 	protected int wins = 0, losses= 0, ties = 0;
 	protected int streak = 0, maxStreak =0;
 	protected int count = 1; /// How many members are in the team
 	List<String> p ;
 	
 	VersusRecords vRecord = null;
-	private TrackerInterface parent;
+	private TrackerImpl parent;
 
 	@Override
 	public String getKey() {
@@ -71,10 +72,17 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	public void endStreak() {streak=0;setDirty();}
 	public int getMaxStreak() {return maxStreak;}
 	public void setMaxStreak(int maxStreak) {this.maxStreak = maxStreak;setDirty();}
+	public void setMaxRanking(int maxRanking) {this.maxRanking = maxRanking;setDirty();}
 
-	public int getElo() {return (int) elo;}
+	public int getRanking() {return (int) ranking;}
+	public int getMaxRanking() {return (int) maxRanking;}
 
-	public void setElo(float elo){this.elo = elo;setDirty();}
+	public void setRanking(float ranking){
+		this.ranking = ranking;
+		if (this.ranking > maxRanking)
+			maxRanking = this.ranking;
+		setDirty();
+	}
 	
 	@Override 
 	public boolean equals( Object obj ) {
@@ -170,7 +178,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		sb.append("[Team=" + getName() + " ["+getElo()+":"+getKDRatio()+"](" + getWins() + ":" + getLosses() + ":" + getStreak() +") id="+strid +
+		sb.append("[Team=" + getName() + " ["+getRanking()+":"+getKDRatio()+"](" + getWins() + ":" + getLosses() + ":" + getStreak() +") id="+strid +
 				",count="+count+",p.size="+ (p==null?"null" : p.size()) );
 		if (vRecord != null){
 			sb.append("  [Kills]= ");
@@ -186,7 +194,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 		return vRecord;
 	}
 
-	public void setParent(TrackerInterface parent) {
+	public void setParent(TrackerImpl parent) {
 		this.parent = parent;
 	}
 

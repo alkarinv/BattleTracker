@@ -1,7 +1,15 @@
-sendPVPDeathMessages: true
+showBukkitDeathMessages: false # turn on and off normal bukkit death messages
+sendPVPDeathMessages: true # send Messages on PvP deaths
 
+### Track Player vs Player stats
+trackPvP: true
+
+### Track Player vs Environment stats
+trackPvE: true
+
+### If showing PvP messages should we use a Herochat channel
 useHeroChat: false
-chatChannel: "Global"
+chatChannel: "Global" ## Which channel to use
 
 ### If number of seconds between kills is less than
 ### this number, show on a rampage message
@@ -10,50 +18,13 @@ rampageTime: 7
 ### Display a player is on a streak messages every x kills
 streakMessagesEvery: 10
 
-### Set this to true if we are loading from flat files
-### into the DB for the first time, 
-changeYamlIntoSQL: false
-
 SQLOptions:
-  db: tracker
-  url : "localhost"
-  port : "3306"
+  type: sqlite # sqlite or mysql
+  db: tracker # db name
+  url : "localhost" # ignored if not mysql
+  port : "3306" # ignored if not mysql
   username: "root"
   password: ""
-
-rankTextColor: "&7"
-useTopXRanks: false
-topXRanks:
-  - "GEN" 
-  - "LTG"
-  - "MG"
-  - "BG"
-  - "COL"
-  - "LTC"
-  - "MAJ"
-  - "CPT"
-  - "1LT"
-  - "2LT"
-  ### You can add more here
-
-useRanksForTotalKills: false
-ranksForTotalKills:
-  0 : "n00b"
-  1 : "Noob"
-  10 : "Novice"
-  50 : "Apprentice"
-  100 : "Soldier"
-  200 : "Veteran"
-  500 : "Master"
-  2000 : "BattleMaster"
-  5000 : "WalkingDeath"
-
-### These are case sensitive exact matches of in game player names
-useUniqueRanks: false
-uniqueRanks:
-  Latros : "Mighty Tyrant"
-  Yashua : "World Killer"
-  alkarin_v : "Walking Target"
   
 ## These are the default elo options, they can be overridden by calling plugins
 elo:
