@@ -34,13 +34,12 @@ public class TeamStat extends Stat implements Comparable<TeamStat>{
 			int c = charCount(name,',');
 			count = c == 0 ? 0: c+1; 
 		}
-//		System.out.println(id + "  this=" + this);
 	}
 
 	public TeamStat(Set<String> p){
-		this.p = new ArrayList<String>(p);
+		this.members = new ArrayList<String>(p);
 		createName();
-		strid = TeamStat.getKey(this.p);
+		strid = TeamStat.getKey(this.members);
 		count = p.size();
 	}
 
@@ -48,7 +47,8 @@ public class TeamStat extends Stat implements Comparable<TeamStat>{
 //		System.out.println("Setting members = " + players);
 		if (players == null)
 			return;
-		this.p = new LinkedList<String>(players);
+		this.members = new LinkedList<String>(players);
+		strid = TeamStat.getKey(this.members);
 		createName();
 	}
 

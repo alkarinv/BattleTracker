@@ -61,14 +61,14 @@ public class Tracker extends MCPlugin{
 
 	public static TrackerInterface getInterface(String interfaceName, RankingCalculator rankingCalculator){
 		try {
-			interfaceName = interfaceName.toLowerCase();
-			if (!interfaces.containsKey(interfaceName)){
+			String iname = interfaceName.toLowerCase();
+			if (!interfaces.containsKey(iname)){
 				if (rankingCalculator == null)
-					interfaces.put(interfaceName, new TrackerImpl(interfaceName));
+					interfaces.put(iname, new TrackerImpl(interfaceName));
 				else 
-					interfaces.put(interfaceName, new TrackerImpl(interfaceName,rankingCalculator));
+					interfaces.put(iname, new TrackerImpl(interfaceName,rankingCalculator));
 			}
-			return interfaces.get(interfaceName);
+			return interfaces.get(iname);
 		} catch (DBConnectionException e) {
 			e.printStackTrace();
 		}

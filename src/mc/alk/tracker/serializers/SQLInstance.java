@@ -25,8 +25,8 @@ import com.alk.util.Log;
 public class SQLInstance extends SQLSerializer{
 
 
-	private int TEAM_ID_LENGTH = 32;
-	private int TEAM_NAME_LENGTH = 48;
+	public static final int TEAM_ID_LENGTH = 32;
+	public static final int TEAM_NAME_LENGTH = 48;
 	static public String URL = "localhost";
 	static public String PORT = "3306";
 	static public String USERNAME = "root";
@@ -310,7 +310,6 @@ public class SQLInstance extends SQLSerializer{
 		int elo = rs.getInt(ELO);
 		int maxElo = rs.getInt(MAXELO);
 		int count = rs.getInt(COUNT);
-		//		System.out.println("---------------------------------------------");
 		if (DEBUG) System.out.println("name =" + name + " id=" + id +" ranking=" + elo +" count="+count);
 		if (count == 1){
 			ts = new PlayerStat(id);
@@ -325,7 +324,7 @@ public class SQLInstance extends SQLSerializer{
 			RSCon rscon2 = executeQuery(get_members, id);
 			ResultSet rs2 = rscon2.rs;
 			while (rs2.next()){
-				if (DEBUG) System.out.println("Loading member=" + rs2.getString(NAME));
+				System.out.println("Loading member=" + rs2.getString(NAME));
 				players.add(rs2.getString(NAME));
 			}
 
@@ -508,7 +507,6 @@ public class SQLInstance extends SQLSerializer{
 		if (types==null)
 			return;
 		if (DEBUG) System.out.println("saveOverallRecords types=" + types +"  size=" +(types != null ? types.size():0));
-
 		List<List<Object>> batch = new ArrayList<List<Object>>();
 		for (VersusRecord or: types){
 			/// Whichever id is less stores the information to avoid redundancy

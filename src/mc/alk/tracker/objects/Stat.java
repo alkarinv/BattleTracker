@@ -1,12 +1,14 @@
 package mc.alk.tracker.objects;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.ranking.EloCalculator;
 import mc.alk.tracker.util.Cache.CacheObject;
+import mc.alk.tracker.util.Util;
 
 import org.bukkit.entity.Player;
 
@@ -18,22 +20,30 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	protected int wins = 0, losses= 0, ties = 0;
 	protected int streak = 0, maxStreak =0;
 	protected int count = 1; /// How many members are in the team
-	List<String> p ;
+	List<String> members ;
 	
 	VersusRecords vRecord = null;
 	private TrackerImpl parent;
 
 	@Override
 	public String getKey() {
+		if (strid.length() > 32 )
+			Util.printStackTrace();
+
 		return getStrID();
 	}
 
 	public List<String> getMembers() {
-		return p;
+		return members;
 	}
 
 	public String getStrID(){return strid;}
-	public void setName(String name) {this.name = name; setDirty();}
+	public void setName(String name) {
+		this.name = name; setDirty();
+		if (name != null && name.length() > 32 )
+			Util.printStackTrace();
+
+	}
 
 	public String getName(){return name;}
 
@@ -106,6 +116,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	}
 
 	public void win(Stat ts) {
+//		System.out.println("win = " + ts);
 		wins++;
 		streak++;
 		if (streak > maxStreak){
@@ -150,15 +161,11 @@ public abstract class Stat extends CacheObject<String,Stat>{
 		return sb.toString();
 	}
 
-	public void setID(String id) {
-		this.strid= id;
-	}
-
-	public VersusRecord getRecordVersus(String id) {
+	public VersusRecord getRecordVersus(Stat stat) {
 		/// We cant get a record if we have no way of loading
 		if (vRecord == null){
 			vRecord = getRecord();}
-		return vRecord.getRecordVersus(id);
+		return vRecord.getRecordVersus(stat.getStrID());
 	}
 
 	protected void createName(){
@@ -167,7 +174,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 		//		System.out.println("name="+name);
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for (String n : p){
+		for (String n : members){
 			if (!first) sb.append(",");
 			sb.append(n);
 			first = false;
@@ -179,11 +186,13 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("[Team=" + getName() + " ["+getRanking()+":"+getKDRatio()+"](" + getWins() + ":" + getLosses() + ":" + getStreak() +") id="+strid +
-				",count="+count+",p.size="+ (p==null?"null" : p.size()) );
+				",count="+count+",p.size="+ (members==null?"null" : members.size()) );
 		if (vRecord != null){
 			sb.append("  [Kills]= ");
-			for (String tk : vRecord.getIndividualRecords().keySet()){
-				sb.append(tk +":" + vRecord.getIndividualRecords().get(tk) +" ," );
+			HashMap<String,List<WLTRecord>> records = vRecord.getIndividualRecords();
+			if (records != null){
+				for (String tk : records.keySet()){
+					sb.append(tk +":" + vRecord.getIndividualRecords().get(tk) +" ," );}	
 			}
 		}
 		sb.append("]");

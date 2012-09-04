@@ -23,7 +23,6 @@ public class VersusRecords implements CacheSerializer<List<String>,VersusRecord>
 	boolean saveIndividualRecord = true;
 
 	public VersusRecords(String myid, SQLInstance sql){
-//		System.out.println("myid = " + myid +"  sql=" + sql);
 		this.id = myid;
 		this.sql = sql;
 	}

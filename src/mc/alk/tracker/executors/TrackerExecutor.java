@@ -50,7 +50,6 @@ public class TrackerExecutor extends CustomCommandExecutor {
 	@MCCommand(cmds={"top"}, min=1,usage="top [x] [team size]")
 	public boolean showTopXOther(CommandSender sender, Command cmd, String commandLabel,  Object[] args){
 		int x = 5;
-		int teamSize = 1;
 		StatType st = null;
 		if (args.length > 1){
 			int xIndex = 1;
@@ -60,17 +59,17 @@ public class TrackerExecutor extends CustomCommandExecutor {
 			}
 			if (args.length > xIndex)
 				try {x = Integer.valueOf((String) args[xIndex]);}catch (Exception e){}
-			if (args.length > xIndex +1){
-				try {teamSize = Integer.valueOf((String) args[xIndex+1]);}catch (Exception e){}
-			}
 		}
+
 		if (x<=0 || x > 100){
 			return sendMessage(sender,"x must be between 1 and 100");}
 		List<Stat> stats = st == null ? ti.getTopXRanking(x) : ti.getTopX(st, x);
+		String stname = st == null ? "Ranking" : st.getName();
 		int min = (int) Math.min(x, stats.size());
 		if (min==0){
 			return sendMessage(sender,ChatColor.RED+"there are no records in the &6" + ti.getInterfaceName() +"&c table");}
-		sendMessage(sender,"&4======================== &6"+ti.getInterfaceName()+" &4========================");
+		sendMessage(sender,"&4======================== &6"+ti.getInterfaceName()+" "+stname+"&4========================");
+		
 		Stat stat;
 		for (int i=0;i<min;i++){
 			stat = stats.get(i);
@@ -78,14 +77,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 					"&e),Losses(&8"+stat.getLosses()+"&e),Streak(&b"+stat.getStreak()+"&e) W/L(&c"+stat.getKDRatio()+"&e)");
 		}
 		
-		ti.printTopX(sender, StatType.RANKING, x, teamSize);
 		return true;
-	}
-
-
-	private boolean showTopXStats(CommandSender sender, StatType st, Object[] args) {
-		
-		return false;
 	}
 
 	@MCCommand(cmds={"versus","vs"}, inGame=true, min=2,usage="vs <player> [# records]")
@@ -107,7 +99,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 
 		ti.save(stat1,stat2);
 
-		VersusRecord or = stat1.getRecordVersus(stat2.getKey());
+		VersusRecord or = stat1.getRecordVersus(stat2);
 		sendMessage(sender,"&4======================== &6"+ti.getInterfaceName()+" &4========================");
 		sendMessage(sender,"&4================ &6"+stat1.getName()+" ("+stat1.getRanking()+")&e vs &6" +
 				stat2.getName()+"("+stat2.getRanking()+") &4================");
@@ -141,7 +133,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 
 		ti.save(stat1,stat2);
 
-		VersusRecord or = stat1.getRecordVersus(stat2.getKey());
+		VersusRecord or = stat1.getRecordVersus(stat2);
 		sendMessage(sender,"&4======================== &6"+ti.getInterfaceName()+" &4========================");
 		sendMessage(sender,"&4================ &6"+stat1.getName()+" ("+stat1.getRanking()+")&e vs &6" +
 				stat2.getName()+"("+stat2.getRanking()+") &4================");
@@ -178,7 +170,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 	protected String getStatMsg(Stat stat1, Stat stat2) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getFullStatMsg(stat2));
-		VersusRecord or = stat1.getRecordVersus(stat2.getKey());
+		VersusRecord or = stat1.getRecordVersus(stat2);
 		sb.append("record versus (&4"+or.wins +"&e:&8"+or.losses+"&e)");
 		return sb.toString();
 	}

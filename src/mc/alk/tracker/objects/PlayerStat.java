@@ -12,8 +12,8 @@ public class PlayerStat extends TeamStat{
 
 	public PlayerStat(String player) {
 		this.name = this.strid = player;
-		p = new ArrayList<String>();
-		p.add(player);
+		members = new ArrayList<String>();
+		members.add(player);
 		count = 1;
 	}
 	
