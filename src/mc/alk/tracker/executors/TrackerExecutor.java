@@ -3,7 +3,6 @@ package mc.alk.tracker.executors;
 import java.util.List;
 
 import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
@@ -13,13 +12,13 @@ import mc.alk.tracker.util.TimeUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.alk.executors.CustomCommandExecutor;
-import com.alk.executors.MCCommand;
 
 public class TrackerExecutor extends CustomCommandExecutor {
 	TrackerInterface ti;
@@ -29,23 +28,23 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		this.ti =ti;
 	}
 
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if (args.length==0 || (args.length != 0 && !hasMethod(args[0].toLowerCase()))){
-			/// Handle them typing a command like /pvp, or /pve.  show their own stats
-			if (args.length==0){
-				if (!(sender instanceof Player))
-					return super.onCommand(sender, cmd, commandLabel, args);
-				else 
-					return showStatsSelf(sender,(sender instanceof Player) ? (Player) sender: null,args);
-			} 
-			else if (args[0].equalsIgnoreCase("stats")){
-
-			}
-			/// They are querying a player
-			return showStatsOther(sender,(sender instanceof Player) ? (Player) sender: null,args);
-		}
-		return super.onCommand(sender, cmd, commandLabel, args);
-	}
+	//	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+	//		if (args.length==0 || (args.length != 0 && !hasMethod(args[0].toLowerCase()))){
+	//			/// Handle them typing a command like /pvp, or /pve.  show their own stats
+	//			if (args.length==0){
+	//				if (!(sender instanceof Player))
+	//					return super.onCommand(sender, cmd, commandLabel, args);
+	//				else 
+	//					return showStatsSelf(sender,(sender instanceof Player) ? (Player) sender: null,args);
+	//			} 
+	//			else if (args[0].equalsIgnoreCase("stats")){
+	//
+	//			}
+	//			/// They are querying a player
+	//			return showStatsOther(sender,(sender instanceof Player) ? (Player) sender: null,args);
+	//		}
+	//		return super.onCommand(sender, cmd, commandLabel, args);
+	//	}
 
 	@MCCommand(cmds={"top"}, min=1,usage="top [x] [team size]")
 	public boolean showTopXOther(CommandSender sender, Command cmd, String commandLabel,  Object[] args){
@@ -68,15 +67,15 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		int min = (int) Math.min(x, stats.size());
 		if (min==0){
 			return sendMessage(sender,ChatColor.RED+"there are no records in the &6" + ti.getInterfaceName() +"&c table");}
-		sendMessage(sender,"&4======================== &6"+ti.getInterfaceName()+" "+stname+"&4========================");
-		
+		sendMessage(sender,"&4=============== &6"+ti.getInterfaceName()+" "+stname+"&4===============");
+
 		Stat stat;
 		for (int i=0;i<min;i++){
 			stat = stats.get(i);
 			sendMessage(sender,"&6"+i+"&e: &c" + stat.getName()+"&6["+stat.getRanking()+"] &eWins(&6"+stat.getWins()+
 					"&e),Losses(&8"+stat.getLosses()+"&e),Streak(&b"+stat.getStreak()+"&e) W/L(&c"+stat.getKDRatio()+"&e)");
 		}
-		
+
 		return true;
 	}
 
@@ -111,7 +110,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 			final String color = wlt.wlt == WLT.WIN ? "&2" : "&8";
 			sendMessage(sender,color+wlt.wlt +"&e : &6" + TimeUtil.convertLongToDate(wlt.date));			
 		}
-		
+
 		return true;
 	}
 
@@ -145,7 +144,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 			final String color = wlt.wlt == WLT.WIN ? "&2" : "&8";
 			sendMessage(sender,color+wlt.wlt +"&e : &6" + TimeUtil.convertLongToDate(wlt.date));			
 		}
-		
+
 		return true;
 	}
 
@@ -161,11 +160,11 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		return sb.toString();
 	}
 
-	private String getStatMsg(Stat stat) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("&e"+stat.getName() +"&6["+stat.getRanking()+"] &e(&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)");
-		return sb.toString();
-	}
+//	private String getStatMsg(Stat stat) {
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("&e"+stat.getName() +"&6["+stat.getRanking()+"] &e(&4"+stat.getWins()+"&e:&8"+stat.getLosses()+"&e)");
+//		return sb.toString();
+//	}
 
 	protected String getStatMsg(Stat stat1, Stat stat2) {
 		StringBuilder sb = new StringBuilder();
@@ -175,24 +174,22 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		return sb.toString();
 	}
 
-	protected boolean showStatsSelf(CommandSender sender, Player p, String[] args) {
+	@MCCommand(inGame=true)
+	public boolean showStatsSelf(Player p) {
 		Stat stat = ti.loadRecord(p);
 		String msg = getFullStatMsg(stat);
-		return sendMessage(sender, msg);
+		return sendMessage(p, msg);
 	}
 
-	protected boolean showStatsOther(CommandSender sender, Player p, String[] args) {
+	@MCCommand
+	public boolean showStatsOther(CommandSender sender, OfflinePlayer p) {
 		/// Try to find the stat from what they typed
-		Stat stat = findStat(args[0]);
+		Stat stat = findStat(p.getName());
 		if (stat == null){ /// Find a player matching that name, hopefully
-			return sendMessage(sender, "&4A record for player &6"+args[0] +"&4 couldn't be found");}
+			return sendMessage(sender, "&4A record for player &6"+p.getName() +"&4 couldn't be found");}
 		String msg=null;
-		if (p != null){
-			Stat selfStat = ti.loadRecord(p);
-			msg = getStatMsg(selfStat,stat);
-		} else {
-			msg = getStatMsg(stat);	
-		}
+		Stat selfStat = ti.loadRecord(p);
+		msg = getStatMsg(selfStat,stat);
 
 		return sendMessage(sender, msg);
 	}
@@ -207,12 +204,6 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		}
 		return stat;
 	}
-
-	protected boolean sendMessage(CommandSender sender, String string) {
-		sender.sendMessage(MessageController.colorChat(string));
-		return true;
-	}
-
 
 	protected Player findOnlinePlayer(String name) {
 		if (name == null)

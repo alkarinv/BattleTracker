@@ -14,6 +14,7 @@ import mc.alk.tracker.listeners.BTPluginListener;
 import mc.alk.tracker.ranking.RankingCalculator;
 
 import com.alk.battleCore.MCPlugin;
+import com.alk.battleCore.Version;
 
 public class Tracker extends MCPlugin{
 	static Tracker plugin;
@@ -74,5 +75,8 @@ public class Tracker extends MCPlugin{
 		}
 		return null;
 	}
-	
+	public static Version getVersionObject(){
+		String strv = getSelf().getDescription().getVersion();
+		return new Version(strv);
+	}
 }

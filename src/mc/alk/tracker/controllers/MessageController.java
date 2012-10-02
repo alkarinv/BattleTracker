@@ -67,8 +67,8 @@ public class MessageController {
 			StringBuilder buf = new StringBuilder(n.getString("prefix", "[PVP]"));
 			String msg = n.getString(node, "No translation for " + node);
 			Formatter form = new Formatter(buf);
-
 			form.format(msg, varArgs);
+			form.close();
 			return colorChat(buf.toString());
 		} catch(Exception e){
 			System.err.println("Error getting message " + prefix + "." + node);
@@ -84,6 +84,7 @@ public class MessageController {
 		Formatter form = new Formatter(buf);
 		try{
 			form.format(msg, varArgs);
+			form.close();
 		} catch(Exception e){
 			System.err.println("Error getting message " + prefix + "." + node);
 			for (Object o: varArgs){ System.err.println("argument=" + o);}
@@ -129,6 +130,7 @@ public class MessageController {
 		Formatter form = new Formatter(buf);
 		try{
 			form.format(msg, varArgs);
+			form.close();
 		} catch(Exception e){
 			System.err.println("Error getting melee message ");
 			for (Object o: varArgs){ System.err.println("argument=" + o);}
@@ -142,6 +144,7 @@ public class MessageController {
 		Formatter form = new Formatter(buf);
 		try{
 			form.format(msg, varArgs);
+			form.close();
 		} catch(Exception e){
 			System.err.println("Error getting range message ");
 			for (Object o: varArgs){ System.err.println("argument=" + o);}

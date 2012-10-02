@@ -2,13 +2,10 @@ package mc.alk.tracker.executors;
 
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.Stat;
-import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
+import mc.alk.tracker.objects.WLT;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-
-import com.alk.executors.MCCommand;
 
 public class PVPExecutor extends TrackerExecutor {
 	
@@ -17,21 +14,21 @@ public class PVPExecutor extends TrackerExecutor {
 	}
 
 	@MCCommand(cmds={"addKill"},op=true,min=3,usage="addkill <player1> <player2>: this is a debugging method")
-	public boolean addKill(CommandSender sender, Command cmd, String commandLabel, Object[] args){
-		Stat stat = ti.loadPlayerRecord((String)args[1]);
-		Stat stat2 = ti.loadPlayerRecord((String)args[2]);
+	public boolean addKill(CommandSender sender, String p1, String p2){
+		Stat stat = ti.loadPlayerRecord(p1);
+		Stat stat2 = ti.loadPlayerRecord(p2);
 		if (stat == null || stat2 == null){
 			sender.sendMessage("Player not found");
 			return true;}
 		
-		ti.addPlayerRecord((String)args[1], (String)args[2], WLT.WIN);
+		ti.addPlayerRecord(p1, p2, WLT.WIN);
 		try {
 			VersusRecord or = stat.getRecordVersus(stat2);		
 			sendMessage(sender, stat.getName()+ " versus " + stat2.getName()+" (&4"+or.wins +"&e:&8"+or.losses+"&e)");
 		} catch(Exception e){
 			
 		}
-	
+
 		return true;
 	}
 

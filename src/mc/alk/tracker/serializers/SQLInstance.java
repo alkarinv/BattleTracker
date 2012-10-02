@@ -78,6 +78,7 @@ public class SQLInstance extends SQLSerializer{
 	String insert_versus_record, get_versus_record;
 	String get_versus_records, getx_versus_records;
 	String truncate_all_tables;
+	String get_rank;
 
 	public static final String get_members = "select "+NAME+" from " + MEMBER_TABLE + " where " + TEAMID +" = ?";
 	String save_members;
@@ -143,6 +144,8 @@ public class SQLInstance extends SQLSerializer{
 		getx_versus_records = "select * from "+INDIVIDUAL_TABLE+" WHERE ("+ID1+"=? AND "+ID2+"=?) OR ("+ID1+"=? AND "+ID2+"=?) ORDER BY "+DATE+" DESC LIMIT ?";
 
 		truncate_all_tables = "truncate table " +OVERALL_TABLE+"; truncate table " + VERSUS_TABLE+"; truncate table "+INDIVIDUAL_TABLE;
+
+		get_rank = "select  count(*) from "+OVERALL_TABLE+" where "+ELO+" > ? and "+COUNT+"=?";
 
 		switch(TYPE){
 		case MYSQL:
@@ -520,5 +523,14 @@ public class SQLInstance extends SQLSerializer{
 
 	public void deleteTables(){
 		this.executeQuery(truncate_all_tables);
+	}
+
+	public int getRecordCount() {
+		return getInteger("select count(*) from " + INDIVIDUAL_TABLE);
+	}
+
+	public Integer getRanking(int ranking, int teamSize) {
+		Integer rank = getInteger(get_rank, ranking, teamSize);
+		return rank != null ? rank + 1: null;
 	}
 }

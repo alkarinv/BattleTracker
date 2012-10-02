@@ -16,9 +16,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.alk.battleCore.Version;
+
 
 public interface TrackerInterface{
-		
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize);
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize, String headerMsg, String bodyMsg);
 	
@@ -112,9 +113,30 @@ public interface TrackerInterface{
 	public List<Stat> getTopXLosses(int x, int teamSize);
 	public List<Stat> getTopXWins(int x, int teamSize);
 	public List<Stat> getTopXKDRatio(int x, int teamSize);
+	
+	/**
+	 * Get the rank of this player
+	 * @param sender
+	 * @return
+	 */
+	public Integer getRank(OfflinePlayer sender);
 
+	/**
+	 * Get the rank of this player/team
+	 * @param sender
+	 * @return
+	 */
+	public Integer getRank(String name);
+	
+	/**
+	 * reset the stats for this interface 
+	 */
 	public void resetStats();
 
+	/**
+	 * Dont Track Individual records or Versus Recrods, Just the overall tally
+	 * @param b
+	 */
 	public void onlyTrackOverallStats(boolean b);
 
 	/**
@@ -160,4 +182,18 @@ public interface TrackerInterface{
 	 * @param stats
 	 */
 	public void flush();
+	
+	/**
+	 * Get how many records are in this interface
+	 * @return
+	 */
+	public int getRecordCount();
+	
+	/**
+	 * Returns the Version of BattleTracker
+	 * @return
+	 */
+	public Version getVersion();
+	
+
 }

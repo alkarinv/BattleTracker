@@ -31,6 +31,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.alk.battleCore.Version;
 import com.alk.serializers.SQLSerializerConfig;
 
 
@@ -378,7 +379,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize, String headerMsg, String bodyMsg){
 		if (x <= 0 ){
 			x = Integer.MAX_VALUE;}
-
+		cache.save();
 		List<Stat> teamstats = getTopXRanking(x, teamSize);
 		if (teamstats == null){
 			MessageController.sendMessage(sender,ChatColor.YELLOW + "The top " + statType.getName() + " can not be found");
@@ -416,6 +417,8 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 				case STREAK: msg = m.replaceAll(stat.getStreak()+""); break;
 				case MAXSTREAK: msg = m.replaceAll(stat.getMaxStreak()+""); break;
 				case WLRATIO: msg = m.replaceAll(stat.getKDRatio()+""); break;
+				default:
+					break;
 				}
 			}
 			msg = msg.replaceAll("\\{rank\\}", i+1 +"");
@@ -423,6 +426,35 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 			MessageController.sendMessage(sender,msg);
 		}
 
+	}
+
+	@Override
+	public int getRecordCount() {
+		return sql.getRecordCount();
+	}
+
+	@Override
+	public Version getVersion() {
+		return Tracker.getVersionObject();
+	}
+
+	@Override
+	public Integer getRank(OfflinePlayer sender) {
+		cache.save();
+		System.out.println("GETTTING RANK  " + sender.getName());
+		Stat s = getPlayerRecord(sender);
+		if (s == null)
+			return null;
+		return sql.getRanking(s.getRanking(),s.getCount());
+	}
+	
+	@Override
+	public Integer getRank(String team) { 
+		cache.save();
+		Stat s = getRecord(team);
+		if (s == null)
+			return null;
+		return sql.getRanking(s.getRanking(),s.getCount());
 	}
 
 }
