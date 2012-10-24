@@ -7,9 +7,9 @@ import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.TrackerController;
 import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.controllers.TrackerImpl.DBConnectionException;
-import mc.alk.tracker.executors.PVPExecutor;
+import mc.alk.tracker.executors.BattleTrackerExecutor;
+import mc.alk.tracker.executors.TrackerExecutor;
 import mc.alk.tracker.listeners.BTEntityListener;
-import mc.alk.tracker.listeners.BTPlayerListener;
 import mc.alk.tracker.listeners.BTPluginListener;
 import mc.alk.tracker.ranking.RankingCalculator;
 
@@ -28,13 +28,12 @@ public class Tracker extends MCPlugin{
 		createPluginFolder();
 		ConfigController.setConfig(load("/default_files/config.yml",getDataFolder().getPath() +"/config.yml"));
 		getServer().getPluginManager().registerEvents(new BTEntityListener(), this);
-		getServer().getPluginManager().registerEvents(new BTPlayerListener(), this);
 		getServer().getPluginManager().registerEvents(new BTPluginListener(), this);
 		MessageController.setConfig(load("/default_files/messages.yml",getDataFolder().getPath() +"/messages.yml"));
 
-		getCommand("battleTracker").setExecutor(new PVPExecutor(getInterface(Defaults.PVP_INTERFACE)));
-		getCommand("pvp").setExecutor(new PVPExecutor(getInterface(Defaults.PVP_INTERFACE)));
-		getCommand("pve").setExecutor(new PVPExecutor(getInterface(Defaults.PVE_INTERFACE)));
+		getCommand("battleTracker").setExecutor(new BattleTrackerExecutor());
+		getCommand("pvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
+		getCommand("pve").setExecutor(new TrackerExecutor(getInterface(Defaults.PVE_INTERFACE)));
 
 		BTPluginListener.loadPlugins();
 	}

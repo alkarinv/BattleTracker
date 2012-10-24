@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import mc.alk.tracker.Defaults;
 import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.ranking.EloCalculator;
@@ -109,14 +110,15 @@ public abstract class Stat extends CacheObject<String,Stat>{
 		return this.strid.compareTo(o.strid);
 	}
 
-	protected VersusRecords getRecord(){
+	public VersusRecords getRecord(){
 		if (vRecord == null)
 			vRecord = new VersusRecords(getKey(),parent.getSQL()) ;
 		return vRecord;
 	}
 
 	public void win(Stat ts) {
-//		System.out.println("win = " + ts);
+		if (Defaults.DEBUG_ADD_RECORDS) System.out.println("BT Debug: win: tsID="+ts.getStrID() + 
+				"  parent=" + parent +"  " + (parent !=null? parent.getSQL() : "null") + " key=" + getKey());
 		wins++;
 		streak++;
 		if (streak > maxStreak){

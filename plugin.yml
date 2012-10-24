@@ -2,7 +2,7 @@ name: BattleTracker
 
 main: mc.alk.tracker.Tracker
 
-version: 2.1.2.1
+version: 2.1.5
 
 author: Alkarin
 softdepend: [BattleCore,Herochat]
@@ -13,9 +13,11 @@ commands:
         description: Show help menu
         usage: /bt
     pvp:
+        aliases: [btpvp]
         description: Show how players have matched up
         usage: /pvp player1 [player2]
     pve:
+        aliases: [btpve]
         description: Show how players have matched up vs mobs/environment
-        usage: /pvp player1 [player2]
+        usage: /pve player1 [player2]
     

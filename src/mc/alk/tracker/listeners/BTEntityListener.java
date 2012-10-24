@@ -9,6 +9,7 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.TrackerController;
+import mc.alk.tracker.objects.SpecialType;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.WLT;
 
@@ -34,8 +35,6 @@ public class BTEntityListener implements Listener{
 
 	ConcurrentHashMap<String,Long> lastDamageTime = new ConcurrentHashMap<String,Long>();
 	ConcurrentHashMap<String,RampageStreak> lastKillTime = new ConcurrentHashMap<String,RampageStreak>();
-	static int streakEvery = 15;
-	static int rampageTime = 7000;
 	Random r = new Random();
 	TrackerInterface playerTi;
 	TrackerInterface worldTi;
@@ -58,10 +57,7 @@ public class BTEntityListener implements Listener{
 		boolean targetPlayer = false, killerPlayer = false;
 		boolean isMelee = true;
 		ItemStack killingWeapon = null;
-		if (!ConfigController.getBoolean("showBukkitDeathMessages") && event instanceof PlayerDeathEvent){
-			PlayerDeathEvent pde = (PlayerDeathEvent) event;
-			pde.setDeathMessage(""); /// Set to none, will cancel all non pvp messages
-		}
+
 		/// Get our hapless target
 		Entity targetEntity = event.getEntity();
 		if (targetEntity instanceof Player){
@@ -74,8 +70,11 @@ public class BTEntityListener implements Listener{
 		}
 		//		FileLogger.log("onEntityDeath " + target +" targetPlayer=" + targetPlayer +"   tracking=" + TrackerController.dontTrack(target));
 		/// Should we be tracking this person
-		if (targetPlayer && TrackerController.dontTrack(target))
+		if (targetPlayer && TrackerController.dontTrack(target)){
+			if (event instanceof PlayerDeathEvent)
+				((PlayerDeathEvent) event).setDeathMessage(""); /// Set to none, will cancel all non pvp messages
 			return;
+		}
 
 		EntityDamageEvent lastDamageCause = event.getEntity().getLastDamageCause();
 
@@ -100,11 +99,11 @@ public class BTEntityListener implements Listener{
 				}
 			} else { /// Killer is not a player
 				killer = edbee.getDamager().getType().getName();
-			}			
+			}
 		} else {
 			if (lastDamageCause == null || lastDamageCause.getCause() == null)
 				killer  = "unknown";
-			else 
+			else
 				killer = lastDamageCause.getCause().name();
 		}
 		//		FileLogger.log("onEntityDeath " + target +" targetPlayer=" + targetPlayer +"   tracking=" + TrackerController.dontTrack(target)+
@@ -114,52 +113,94 @@ public class BTEntityListener implements Listener{
 			return;
 		/// Decide what to do
 		if (targetPlayer && killerPlayer){
+			/// Check to see if we add the records
 			if (ConfigController.getBoolean("trackPvP",true))
 				addRecord(playerTi,killer,target,WLT.WIN,true);
+			/// Check to see if an admin has disabled death messages
+			PlayerDeathEvent pde = (PlayerDeathEvent) event;
+			if (Defaults.DISABLE_PVP_MESSAGES){
+				pde.setDeathMessage(null);
+				return;
+			}
+			/// Check sending messages
+			if (ConfigController.getBoolean("sendPVPDeathMessages",true)){
+				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
 
-			if (ConfigController.getBoolean("sendPVPDeathMessages",true))
-				MessageController.sendDeathMessage(getDeathMessage(killer,target,isMelee,playerTi,killingWeapon));
+				String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,wpn);
+				pde.setDeathMessage(msg);
+			} else if (!ConfigController.getBoolean("showBukkitPVPMessages",false)){
+				pde.setDeathMessage(null);
+			}
 		} else if (!targetPlayer && !killerPlayer){ /// mobs killing each other, or dying by traps
 			/// Do nothing
-		} else if (ConfigController.getBoolean("trackPvE",true)){ /// One player, One other
-			if (!killerPlayer){
+		} else { /// One player, One other
+			/// Get rid of Craft before mobs.. CraftSpider -> Spider
+			if (!killerPlayer && killer.contains("Craft")){
 				killer = killer.replaceAll("Craft", "");}
-			if (!targetPlayer){
+			if (!targetPlayer && target.contains("Craft")){
 				target = target.replaceAll("Craft", "");}
-			addRecord(worldTi, killer,target,WLT.WIN, false);
-		}		
+
+			/// Should we track the kills?
+			if (ConfigController.getBoolean("trackPvE",true)){
+				addRecord(worldTi, killer,target,WLT.WIN, false);}
+
+			/// Check message sending
+			if (targetPlayer && event instanceof PlayerDeathEvent){
+				/// Check to see if an admin has disabled death messages
+				PlayerDeathEvent pde = (PlayerDeathEvent) event;
+				if (Defaults.DISABLE_PVE_MESSAGES){
+					pde.setDeathMessage(null);
+					return;
+				}
+
+				if (ConfigController.getBoolean("sendPVEDeathMessages",true)){
+					final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
+					String msg = getPvEDeathMessage(killer,target,isMelee,worldTi,wpn);
+					pde.setDeathMessage(msg);
+				} else if (!ConfigController.getBoolean("showBukkitPVEMessages",false)){
+					pde.setDeathMessage(null);
+				}
+			}
+		}
 	}
 
-	public String getDeathMessage(String p1, String p2, boolean isMeleeDeath, TrackerInterface ti, ItemStack killingWeapon){
-		/// Check for a rampage 
+	public String getPvPDeathMessage(String killer, String target, boolean isMeleeDeath,
+			TrackerInterface ti, String killingWeapon){
+
+		/// Check for a rampage
 		try {
-			RampageStreak lastKill = lastKillTime.get(p1);
+			RampageStreak lastKill = lastKillTime.get(killer);
 			long now = System.currentTimeMillis() ;
-			if (lastKill != null && now - lastKill.time < rampageTime){
+			if (lastKill != null && now - lastKill.time < Defaults.RAMPAGE_TIME){
 				lastKill.nkills++;
 				lastKill.time = now;
-				return MessageController.getMessage("onARoll", p1,p2, lastKill.nkills);
+				return MessageController.getSpecialMessage(SpecialType.RAMPAGE, lastKill.nkills, killer,target, killingWeapon);
 			} else {
-				lastKillTime.put(p1, new RampageStreak(now, 1));
+				lastKillTime.put(killer, new RampageStreak(now, 1));
 			}
 		} catch (Exception e){
-			/// in the unlikely case of a Concurrent modification exception, lets not crash 
+			/// in the unlikely case of a Concurrent modification exception, lets not crash
 			/// but instead send a normal message
 		}
 
 		/// If a normal streak
 		/// Player has a multiple of x, send they are on a streak message
-		Stat stat = ti.loadPlayerRecord(p1);
+		Stat stat = ti.loadPlayerRecord(killer);
 		final int streak = stat.getStreak();
-		if (streak != 0 && streakEvery != 0 && streak % streakEvery == 0){ /// they are on a streak
-			return MessageController.getMessage("onAStreak", p1, p2, streak);
+		boolean hasStreak = MessageController.contains("special.streak."+streak);
+		/// they are on a streak
+		if (hasStreak || streak != 0 && Defaults.STREAK_EVERY != 0 && streak % Defaults.STREAK_EVERY== 0){
+			return MessageController.getSpecialMessage(SpecialType.STREAK, streak, killer,target, killingWeapon);
 		} else { /// Display a normal kill message
-			return isMeleeDeath ? MessageController.getMeleeMessage(p1, p2) : MessageController.getRangeMessage(p1, p2);  
+			return MessageController.getPvPMessage(isMeleeDeath,killer, target, killingWeapon);
 		}
 	}
 
+	public String getPvEDeathMessage(String p1, String p2, boolean isMeleeDeath, TrackerInterface ti, String killingWeapon){
+		return MessageController.getPvEMessage(isMeleeDeath, p1, p2,killingWeapon);
+	}
 
-	public static void addRecord(final TrackerInterface ti,final String e1, final String e2, 
+	public static void addRecord(final TrackerInterface ti,final String e1, final String e2,
 			final WLT record, final boolean saveIndividualRecord){
 		Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable(){
 			@Override

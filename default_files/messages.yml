@@ -1,44 +1,147 @@
-english:
-  prefix: '&4[PVP]&f '
+## Options
+# %k : the killer (can be a player, mob, or environment)
+# %d : the dead player
+# %i : item used to kill the player (if one exists)
+# %n : number (used for streaks, rampages)
+### The list of pvp item deaths is incomplete, feel free to add more
+### color codes
+# &0  Black 
+# &1  Dark Blue
+# &2  Dark Green
+# &3  Dark Aqua
+# &4  Dark Red
+# &5  Purple
+# &6  Orange
+# &7  Grey
+# &8  Dark Grey 
+# &9  Indigo
+# &a  Bright Green
+# &b  Aqua
+# &c  Red
+# &d  Pink
+# &e  Yellow
+# &f  White
+pve:
+  prefix: "&e[PvE]&f "
   meleeDeaths:
-    - '%s has slain %s!'
-    - '%s is victorious over %s!'
-    - '%s has overpowered %s in combat!'
-    - '%s killed %s!'
-    - '%s has ended poor %s!'
-    - '%s evicerated %s!'
-    - '%s had fun slicing and dicing %s!'
-    - '%s sent %s to pay Charon!'
-    - '%s impaled %s!'
-    - '%s destroyed %s!'
-    - '%s gutted the unfortunate %s!'
-    - '%s has sent %s to the heavenly realm!'
-    - '%s showed %s the meaning of pain!'
-    - '%s split %s in twain!'
-    - '%s overcame %s in battle!'
-    - '%s defeated %s in mighty struggle!'
-    - '%s ended all dreams for %s!'
+    - "&6%d&f was killed by a &6%i&f"
   rangeDeaths:
-    - '%s has riddled %s with arrows!'
-    - 'With a well aimed shot %s punctured %s heart!'
-  header: '&4****** %s ******'
-  showComparison: 'You have killed %s %s times, they have killed you %s times'
-  showComparePlayers: "%s [%s : %s] %s"
-  showTKSelf: 'You have %s kills, %s deaths,and a streak of %s kills &e[%s]'
-  showTKPlayer: '%s has %s kills, %s deaths,and a streak of %s kills &e[%s]'
-  showTKTop: '&e# %s :&f %s Total Kills %s'
-  showKDSelfNan: 'You are undefeated with %s kills!'
-  showKDSelf: 'Your kill death ratio is: %s'
-  showKDPlayer: '%s has a kill-death ratio of %s'
-  showKDPlayerNan: '%s is undefeated with %s kills!'
-  showKDTop: '&e# %s :&f %s Kill/Death Ratio %s'
-  showStreakSelf: 'You have killed %s players in a row'
-  showStreakPlayer: '%s has killed %s players in a row'
-  showStreakTop: '&e# %s :&f %s streak of %s kills'
-  showBattleRankSelf: 'You have a battle score of %s'
-  showBattleRankPlayer: '%s has a battle score of %s'
-  showBattleRankTop: '&e# %s :&f %s Battle Score %s'
-  showMyStats: 'Overall Stats [Kills %s : Streak %s : Deaths %s]'
-  playerNotFound: 'The player "%s" was not found'
-  onARoll: '%s has slain %s on a rampage of &c%s&f kills!!!'
-  onAStreak: '%s has slain %s in a spree of &c%s&f kills!!!'
+    - "&6%d&f was killed by a &6%i&f"
+  fire: 
+    - "&6%d&f was fried to a crisp"
+    - "&6%d&f burned to death"
+  fire_tick:
+    - "&6%d&f tried to extinguish the flames, but failed"
+  lava:
+    - "&6%d&f was no match for a pool of lava"
+  fall:
+    - "&6%d&f found out what the ground feels like"
+  contact:
+    - "&6%d&f should learn to not jump on a cactus"
+  block_explosion:
+    - "&6%d&f has been shredded by TNT"
+  suffocation:
+    - "&6%d&f ran out of breath"
+  starvation:
+    - "&6%d&f should learn to eat"
+  unknown:
+    - "&6%d&f has died of unknown causes"
+  lightning:
+    - "&6%d&f was struck down by a bolt of lightning"
+  suicide:
+    - "hari kari suited &6%d&f"
+    - "&6%d&f chose the ignoble way out"
+  drowning:
+    - "&6%d&f needs to learn to swim"
+    - "dog paddling wasn't enough for &6%d&f"
+    - "&2water&f was the end of poor &6%d&f"
+  void:
+    - "The &0void&f has claimed &6%d&f"
+  creeper:
+    - "The &2creeper&f blast vaporized &6%d&f"
+  zombie:
+    - "&6%d&f has left this world as a &2zombie"
+    - "&2Zombies&f have devoured &6%d&f"
+    - "The &2zombie&f horde have claimed &6%d&f"
+  skeleton:
+    - "&6%d&f was pierced by a &7skeleton&f arrow"
+    - "&6%d&f was no match for the &7skeleton&f"
+  spider:
+    - "Spiders have drained &6%d&f"
+  cavespider:
+    - "Cavespiders have swarmed &6%d&f"
+  enderdragon:
+    - "The &8ender dragon&f has annihilated &6%d&f"
+  blaze:
+    - "The &4blaze&f has crisped &6%d&f"
+  silverfish:
+    - "&6%d&f was overwhelmed by silverfish"
+  enderman:
+    - "&8Endermen&f have taken &6%d&f to the nether"
+  wolf:
+    - "&6%d&f was hunted down by the pack"
+    - "&6%d&f was devored by wolves"
+  giant:
+    - "&6%d&f was smashed by a Giant"
+    - "A giant has flattened &6%d&f"
+  slime:
+    - "&6%d&f was liquified by a &aslime"
+    - "&6%d&f was enveloped by &aslime"
+  ghast:
+    - "&6%d&f was burned by ghasts"
+  pigzombie:
+    - "The PigZombie horde has claimed &6%d&f"
+  lavaslime:
+    - "&6%d&f has been lavaslimed!"
+pvp:
+  prefix: "&4[PvP]&f "
+  meleeDeaths:
+    - "&6%k&f has slain &6%d&f with a &6%i&f!"
+    - "&6%k&f is victorious over &6%d&f!"
+    - "&6%k&f has overpowered &6%d&f in combat!"
+    - "&6%k&f killed &6%d&f!"
+    - "&6%k&f has ended poor &6%d&f!"
+    - "&6%k&f evicerated &6%d&f!"
+    - "&6%k&f had fun slicing and dicing &6%d&f!"
+    - "&6%k&f sent &6%d&f to pay Charon!"
+    - "&6%k&f impaled &6%d&f!"
+    - "&6%k&f destroyed &6%d&f!"
+    - "&6%k&f gutted the unfortunate &6%d&f!"
+    - "&6%k&f has sent &6%d&f to the heavenly realm!"
+    - "&6%k&f showed &6%d&f the meaning of pain!"
+    - "&6%k&f split &6%d&f in twain!"
+    - "&6%k&f overcame &6%d&f in battle!"
+    - "&6%k&f defeated &6%d&f in mighty struggle!"
+    - "&6%k&f ended all dreams for &6%d&f!"
+  rangeDeaths:
+    - "&6%k&f has riddled &6%d&f with arrows!"
+    - "With a well aimed shot &6%k&f punctured &6%d&f's heart!"
+  air:
+    - "&6%k&f pummeled &6%d&f with their bare hands!"
+    - "&6%d&f was no match for the combat skills of &6%k&f"
+  diamond_sword:
+    - "&6%k&f sliced through &6%d&f"
+  iron_sword:
+    - "&6%k&f slayed &6%d&f with an iron sword"
+  wood_sword:
+    - "&6%k&f hacked &6%d&f to death with a wooden sword"
+  diamond_axe:
+    - "&6%k&f used &6%d&f as mere lumber"
+    - "&6%k&f cleaved &6%d&f"
+
+special:
+  rampage: 
+    default: "&6%k&f has slain &6%d&f on a rampage of &c%n&f kills!!!"
+    "2": "&6%k&f has started a rampage on &6%d&f !!!"
+    "3": "&6%k&f is on a rampage!!!"
+  streak: 
+    default: "&6%k&f has slain &6%d&f in a streak of &c%n&f kills!!!"
+    "10": "&6%k&f is on a killing spree! slaying &6%d&f in a streak of &c%n&f kills!!!"
+    "20": "&6%k&f is unstoppable killing &6%d&f in a streak of &c%n&f kills!!!"
+
+messages:
+  prefix: "&5[Tracker]&f "
+  xBetween: "&cx must be between 1 and %s"
+  recordNotFound: "&cA record for player &6%s&4 couldn't be found"
+  playerNotFound: "&cThe player %s was not found"
+  noRecordsInTable: "&cthere are no records in the &6%s&c table"

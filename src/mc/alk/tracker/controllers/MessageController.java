@@ -5,20 +5,18 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Random;
 
-import mc.alk.tracker.Defaults;
+import mc.alk.tracker.objects.SpecialType;
 
-import org.bukkit.Bukkit;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import com.alk.controllers.MC;
-import com.dthielke.herochat.Channel;
 import com.dthielke.herochat.Herochat;
 
 /**
- * 
+ *
  * @author alkarin
  *
  */
@@ -30,57 +28,45 @@ public class MessageController {
 	static MessageController mc;
 	static List<String> meleeMsgs = null;
 	static List<String> rangeMsgs = null;
-	static Random r = new Random();
-	public static void sendDeathMessage(String msg) {
-		/// Send to global or to a specified herochat/battlechat channel
-		boolean useHero = ConfigController.getBoolean("useHeroChat");
-		if (useHero && hc != null ){
-			String hcchannel = ConfigController.getString("chatChannel");
-			Channel ch = Herochat.getChannelManager().getChannel(hcchannel);
-			if (ch != null){
-			}
-		} else {
-			Bukkit.broadcastMessage(MessageController.colorChat(msg));				
-		}
-
-	}
+	static final Random r = new Random();
+	static String TRACKER_PREFIX = "&5[Tracker]&f ";
+	static String PVP_PREFIX = "&4[PvP]&f ";
+	static String PVE_PREFIX = "&2[PvE]&f ";
 
 	public static Herochat getHeroChat() {
 		return hc;
 	}
+
 	public static void setHeroChat(Herochat hc) {
 		MessageController.hc = hc;
 	}
-	public static String getMessage(String node, Object... varArgs) {
-		return getMsg(Defaults.LANGUAGE,node,varArgs);
+
+	public static String colorChat(String msg) {
+		return msg.replace('&', (char) 167);
 	}
 
-	public static String getMessageNP(String node, Object... varArgs) {
-		return getMsgNP(Defaults.LANGUAGE,node,varArgs);
+	public static boolean setConfig(File f){
+		MessageController.f = f;
+		return load();
 	}
 
+	public static String getMsg(String node, Object... varArgs) {
+		return getMsg(TRACKER_PREFIX,"messages."+node,varArgs);
+	}
 
-	private static String getMsg(String prefix,String node, Object... varArgs) {
-		try{
-			ConfigurationSection n = config.getConfigurationSection(prefix);
+	public static String getMsgNP(String node, Object... varArgs) {
+		return getMsg(null, "messages."+node,varArgs);
+	}
 
-			StringBuilder buf = new StringBuilder(n.getString("prefix", "[PVP]"));
-			String msg = n.getString(node, "No translation for " + node);
-			Formatter form = new Formatter(buf);
-			form.format(msg, varArgs);
-			form.close();
-			return colorChat(buf.toString());
-		} catch(Exception e){
+	private static String getMsg(String prefix, String node, Object... varArgs) {
+		if (!config.contains(node)){
 			System.err.println("Error getting message " + prefix + "." + node);
-			for (Object o: varArgs){ System.err.println("argument=" + o);}
-			e.printStackTrace();
-			return "Error getting message " + prefix + "." + node;
+			return null;
 		}
-	}
-	private static String getMsgNP(String prefix,String node, Object... varArgs) {
-		ConfigurationSection n = config.getConfigurationSection(prefix);
+		String msg = config.getString(node);
 		StringBuilder buf = new StringBuilder();
-		String msg = n.getString(node, "No translation for " + node);
+		if (prefix != null)
+			buf.append(prefix);
 		Formatter form = new Formatter(buf);
 		try{
 			form.format(msg, varArgs);
@@ -91,15 +77,6 @@ public class MessageController {
 			e.printStackTrace();
 		}
 		return colorChat(buf.toString());
-	}
-
-	public static String colorChat(String msg) {
-		return msg.replaceAll("&", Character.toString((char) 167));
-	}
-
-	public static boolean setConfig(File f){
-		MessageController.f = f;
-		return load();
 	}
 
 	public static boolean sendMessage(Player p, String message){
@@ -109,65 +86,108 @@ public class MessageController {
 			if (p == null){
 				System.out.println(MC.colorChat(msg));
 			} else {
-				p.sendMessage(MC.colorChat(msg));			
-			}			
+				p.sendMessage(MC.colorChat(msg));
+			}
 		}
 		return true;
 	}
+
 	public static boolean sendMessage(CommandSender p, String message){
 		if (message ==null) return true;
 		if (p instanceof Player){
 			if (((Player) p).isOnline())
-				p.sendMessage(MC.colorChat(message));			
+				p.sendMessage(MC.colorChat(message));
 		} else {
 			p.sendMessage(MC.colorChat(message));
 		}
 		return true;
 	}
-	public static String getMeleeMessage(Object... varArgs){
-		String msg = meleeMsgs.get(r.nextInt(meleeMsgs.size()));
-		StringBuilder buf = new StringBuilder();
-		Formatter form = new Formatter(buf);
-		try{
-			form.format(msg, varArgs);
-			form.close();
-		} catch(Exception e){
-			System.err.println("Error getting melee message ");
-			for (Object o: varArgs){ System.err.println("argument=" + o);}
-			e.printStackTrace();
+
+	public static String getPvEMessage(boolean melee, String killer, String target, String weapon){
+		String node=null;
+		List<String> messages = null;
+		if (killer != null){
+			node = "pve." + killer.toLowerCase();
+			messages = config.getStringList(node);
 		}
-		return colorChat(buf.toString());
+		if (messages == null || messages.isEmpty()){
+			node = melee ? "pve.meleeDeaths" : "pve.rangeDeaths";
+			messages = config.getStringList(node);
+		}
+		if (messages == null || messages.isEmpty()){
+			System.err.println("[Tracker] getPvEMessage, message node="+node +"  args="+ killer +":" +target+":"+weapon);
+			return null;
+		}
+		String msg = messages.get(r.nextInt(messages.size()));
+		return formatMessage(PVE_PREFIX, msg,killer,target, weapon, null);
 	}
-	public static String getRangeMessage(Object... varArgs){
-		String msg = rangeMsgs.get(r.nextInt(rangeMsgs.size()));
-		StringBuilder buf = new StringBuilder();
-		Formatter form = new Formatter(buf);
+
+	public static String getPvPMessage(boolean melee, String killer, String target, String weapon){
+		String node=null;
+		List<String> messages = null;
+		if (weapon != null){
+			node = "pvp."+ weapon;
+			messages = config.getStringList(node);
+		}
+		if (messages == null || messages.isEmpty()){
+			node = melee ? "pvp.meleeDeaths" : "pvp.rangeDeaths";
+			messages = config.getStringList(node);
+		}
+		if (messages == null || messages.isEmpty()){
+			System.err.println("[Tracker] getPvPMessage, message node="+node +"  args="+ killer +":" +target+":"+weapon);
+			return null;
+		}
+
+		String msg = messages.get(r.nextInt(messages.size()));
+		return formatMessage(PVP_PREFIX, msg,killer,target, weapon,null);
+	}
+
+	public static String getSpecialMessage(SpecialType type, int nKills, String killer, String target, String weapon){
+		String node = null;
+		switch (type){
+		case STREAK: node = "special.streak." + nKills; break;
+		case RAMPAGE: node = "special.rampage." + nKills; break;
+		}
+		String message = config.getString(node);
+		if (message == null || message.isEmpty()){
+			switch (type){
+			case STREAK: node = "special.streak.default"; break;
+			case RAMPAGE: node = "special.rampage.default"; break;
+			}
+			message = config.getString(node);
+		}
+		return formatMessage(PVP_PREFIX, message,killer,target, null, nKills+"");
+	}
+
+	private static String formatMessage(String prefix, String msg, String killer, String target,
+			String item, String times) {
 		try{
-			form.format(msg, varArgs);
-			form.close();
+			if (killer != null) msg = StringUtils.replace(msg,"%k",killer);
+			if (target != null) msg = StringUtils.replace(msg,"%d",target);
+			if (item != null) msg = StringUtils.replace(msg,"%i",item);
+			if (times != null) msg = StringUtils.replace(msg,"%n",times);
 		} catch(Exception e){
-			System.err.println("Error getting range message ");
-			for (Object o: varArgs){ System.err.println("argument=" + o);}
+			System.err.println("Error getting message "+msg);
+			//			for (Object o: varArgs){ System.err.println("argument=" + o);}
 			e.printStackTrace();
 		}
-		return colorChat(buf.toString());
+		return colorChat(prefix+msg);
 	}
 
 	public static boolean load() {
 		try {
 			config.load(f);
-			String prefix = config.getString(Defaults.LANGUAGE+".prefix", "&4[PVP] ");
-			meleeMsgs = config.getStringList(Defaults.LANGUAGE+".meleeDeaths");
-			rangeMsgs = config.getStringList(Defaults.LANGUAGE+".rangeDeaths");
-			for (int i=0;i<meleeMsgs.size();i++){
-				meleeMsgs.set(i, prefix+meleeMsgs.get(i));}
-			for (int i=0;i<rangeMsgs.size();i++){
-				rangeMsgs.set(i, prefix+rangeMsgs.get(i));}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
 		}
+		TRACKER_PREFIX = config.getString("messages.prefix", PVP_PREFIX);
+		PVP_PREFIX = config.getString("pvp.prefix", PVP_PREFIX);
+		PVE_PREFIX = config.getString("pve.prefix", PVE_PREFIX);
 		return true;
+	}
+
+	public static boolean contains(String string) {
+		return config.contains(string);
 	}
 
 }

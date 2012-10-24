@@ -46,13 +46,14 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		private static final long serialVersionUID = 1L;
 		public DBConnectionException(String e){super(e);}
 	}
+	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder("[TI=");
 		sb.append( sql != null ? sql.getTable(): "null" );
 		sb.append("]");
 		return sb.toString();
 	}
-	
+
 	public TrackerImpl(String tableName) throws DBConnectionException{
 		initDB(tableName);
 		EloCalculator ec = new EloCalculator();
@@ -74,8 +75,8 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		cache.setSaveEvery(Defaults.SAVE_EVERY_X_SECONDS *1000);
 
 		EloCalculator ec = new EloCalculator();
-		ec.setDefaultRanking((float) 1250);
-		ec.setEloSpread((float) 400);
+		ec.setDefaultRanking(1250);
+		ec.setEloSpread(400);
 		rc = ec;
 	}
 
@@ -85,7 +86,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		this.tableName = tableName;
 		SQLSerializerConfig.configureSQL(Tracker.getSelf(), sql,
 				ConfigController.config.getConfigurationSection("SQLOptions"));
-		cache.setSaveEvery(Defaults.SAVE_EVERY_X_SECONDS *1000);			
+		cache.setSaveEvery(Defaults.SAVE_EVERY_X_SECONDS *1000);
 	}
 
 	public Stat load(String id, MutableBoolean dirty, Object... varArgs) {
@@ -94,20 +95,20 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		if (stat != null){
 			stat.setCache(cache);
 			dirty.setValue(false);
-			stat.setParent(this);
 		} else if (varArgs.length != 0){
 			dirty.setValue(true);
 			stat = (Stat) varArgs[0];
 			if (Cache.DEBUG) System.out.println(" returning premade " + stat);
 			stat.setCache(cache);
-			stat.setParent(this);
 			stat.setRanking(rc.getDefaultRanking());
 		}
+		if (stat != null)
+			stat.setParent(this);
 		return stat;
 	}
 
 	public void save(List<Stat> stats) {
-		sql.saveAll((Stat[]) stats.toArray(new Stat[stats.size()]));
+		sql.saveAll(stats.toArray(new Stat[stats.size()]));
 	}
 	public void save(Stat... stats) {
 		sql.saveAll(stats);
@@ -119,23 +120,23 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		if (ts1 == null){
 			ts1 = team1;
 			ts1.setCache(cache);
-			ts1.setParent(this);
 			ts1.setRanking(rc.getDefaultRanking());
 			cache.put(team1);
 		}
+		ts1.setParent(this);
 		if (ts2 == null){
 			ts2 = team2;
 			ts2.setCache(cache);
-			ts2.setParent(this);
 			ts2.setRanking(rc.getDefaultRanking());
 			cache.put(team2);
 		}
-//		System.out.println(" ts1 = " + ts1 +"    " + ts2);
+		ts2.setParent(this);
+		if (Defaults.DEBUG_ADD_RECORDS) System.out.println("BT Debug: addStatRecord:sql="+sql + "  ts1 = " + ts1 +"    " + ts2);
 
 		ts1.setSaveIndividual(saveIndividualRecord);
 		ts2.setSaveIndividual(saveIndividualRecord);
 		switch(wlt){
-		case WIN: 
+		case WIN:
 			ts1.win(ts2); ts2.loss(ts1);
 			rc.changeRankings(ts1,ts2,false);
 			break;
@@ -143,7 +144,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 			ts1.loss(ts2); ts2.win(ts1);
 			rc.changeRankings(ts2,ts1,false);
 			break;
-		case TIE: 
+		case TIE:
 			ts1.tie(ts2); ts2.tie(ts1);
 			rc.changeRankings(ts1,ts2,true);
 			break;
@@ -256,14 +257,17 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public Stat getRecord(OfflinePlayer player) {
 		return cache.get(player.getName());
 	}
+
 	public Stat loadRecord(OfflinePlayer op) {
 		PlayerStat stat = new PlayerStat(op);
 		return loadStat(stat);
 	}
+
 	public Stat loadPlayerRecord(String name) {
 		PlayerStat stat = new PlayerStat(name);
 		return loadStat(stat);
 	}
+
 	public Stat loadRecord(Set<Player> players) {
 		HashSet<String> names = new HashSet<String>();
 		for (OfflinePlayer p : players){
@@ -296,7 +300,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public List<Stat> getTopXLosses(int x) { return getTopX(StatType.LOSSES,x,1);}
 	public List<Stat> getTopXWins(int x) {return getTopX(StatType.WINS,x,1);}
 	public List<Stat> getTopXKDRatio(int x) { return getTopX(StatType.KDRATIO,x,1);}
-	
+
 	public List<Stat> getTopX(StatType statType, int x) {
 		return getTopX(statType,x,1);
 	}
@@ -308,8 +312,8 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public List<Stat> getTopXWins(int x, int teamsize) {return getTopX(StatType.WINS,x,teamsize);}
 	public List<Stat> getTopXLosses(int x, int teamsize) {return getTopX(StatType.LOSSES,x,teamsize);}
 	public List<Stat> getTopXKDRatio(int x, int teamsize) {return getTopX(StatType.KDRATIO,x,teamsize);}
-	
-	
+
+
 	public List<Stat> getTopX(StatType statType, int x, int teamsize) {
 		cache.save();
 		switch(statType){
@@ -325,7 +329,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		return null;
 	}
 
-	
+
 	public void resetStats() {
 		cache.clear();
 		sql.deleteTables();
@@ -356,11 +360,11 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		stat.setRanking(ranking);
 		return true;
 	}
-	
+
 	public String getInterfaceName() {
 		return tableName;
 	}
-	
+
 	public List<WLTRecord> getVersusRecords(String name, String name2) {
 		return getVersusRecords(name,name2,10);
 	}
@@ -369,7 +373,11 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		cache.save();
 		return sql.getVersusRecords(name,name2,x);
 	}
-
+	@Override
+	public List<WLTRecord> getWinsSince(Stat stat, Long time) {
+		cache.save();
+		return sql.getWinsSince(stat.getName(),time);
+	}
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize){
 		final String headerMsg = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
 		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{ranking}]";
@@ -397,7 +405,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		/// Send the Body Messages
 		Map<StatType,Pattern> patterns = new HashMap<StatType,Pattern>(StatType.values().length);
 		for (StatType st: StatType.values()){
-			patterns.put(st,Pattern.compile("\\{"+st.name().toLowerCase()+"\\}"));		
+			patterns.put(st,Pattern.compile("\\{"+st.name().toLowerCase()+"\\}"));
 		}
 
 		final int max = Math.min(x,teamstats.size());
@@ -447,14 +455,16 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 			return null;
 		return sql.getRanking(s.getRanking(),s.getCount());
 	}
-	
+
 	@Override
-	public Integer getRank(String team) { 
+	public Integer getRank(String team) {
 		cache.save();
 		Stat s = getRecord(team);
 		if (s == null)
 			return null;
 		return sql.getRanking(s.getRanking(),s.getCount());
 	}
+
+
 
 }

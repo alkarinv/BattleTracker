@@ -25,4 +25,8 @@ public class WLTRecord {
 	public void reverse() {
 		wlt = wlt.reverse(); 
 	}
+
+	public Long getDate() {
+		return date;
+	}
 }

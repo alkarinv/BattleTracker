@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,7 +78,7 @@ public class SQLInstance extends SQLSerializer{
 	String get_topx_kd, get_topx_elo, get_topx_maxelo;
 	String save_ind_record, get_ind_record;
 	String insert_versus_record, get_versus_record;
-	String get_versus_records, getx_versus_records;
+	String get_versus_records, getx_versus_records, get_wins_since;
 	String truncate_all_tables;
 	String get_rank;
 
@@ -112,7 +114,7 @@ public class SQLInstance extends SQLSerializer{
 				ELO + " INTEGER UNSIGNED DEFAULT " + 1250+"," +
 				MAXELO + " INTEGER UNSIGNED DEFAULT " + 1250+"," +
 				COUNT + " INTEGER UNSIGNED DEFAULT 1," +
-				"PRIMARY KEY (" + TEAMID +")) "; 
+				"PRIMARY KEY (" + TEAMID +")) ";
 
 		create_versus_table = "CREATE TABLE IF NOT EXISTS " + VERSUS_TABLE +" ("+
 				ID1 + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
@@ -129,8 +131,8 @@ public class SQLInstance extends SQLSerializer{
 
 
 		get_topx_wins = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+WINS+" DESC LIMIT ?";
-		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+LOSSES+" DESC LIMIT ? ";		
-		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+TIES+" DESC LIMIT ? ";		
+		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+LOSSES+" DESC LIMIT ? ";
+		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+TIES+" DESC LIMIT ? ";
 		get_topx_streak = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+STREAK +" DESC LIMIT ?";
 		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
 		get_topx_elo = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+ELO+" DESC LIMIT ?";
@@ -146,6 +148,8 @@ public class SQLInstance extends SQLSerializer{
 		truncate_all_tables = "truncate table " +OVERALL_TABLE+"; truncate table " + VERSUS_TABLE+"; truncate table "+INDIVIDUAL_TABLE;
 
 		get_rank = "select  count(*) from "+OVERALL_TABLE+" where "+ELO+" > ? and "+COUNT+"=?";
+
+		get_wins_since = "select * from "+INDIVIDUAL_TABLE+" WHERE ("+ID1+"=? AND WLTIE=1) OR ("+ID2+"=? AND WLTIE=0) AND "+DATE+" >= ? ORDER BY "+DATE+" DESC ";
 
 		switch(TYPE){
 		case MYSQL:
@@ -166,13 +170,13 @@ public class SQLInstance extends SQLSerializer{
 					STREAK +"= VALUES(" + STREAK+")," +MAXSTREAK +"= VALUES(" + MAXSTREAK+")," +
 					ELO +"= VALUES(" + ELO + ")," +  MAXELO +"= VALUES(" + MAXELO+")";
 
-			insert_versus_record = "insert into "+VERSUS_TABLE+" VALUES(?,?,?,?,?) " + 
-					"ON DUPLICATE KEY UPDATE " + 
+			insert_versus_record = "insert into "+VERSUS_TABLE+" VALUES(?,?,?,?,?) " +
+					"ON DUPLICATE KEY UPDATE " +
 					WINS + " = VALUES(" + WINS +"), " + LOSSES +"=VALUES(" + LOSSES + "), " + TIES +"=VALUES(" + TIES + ")";
 
 			save_ind_record = "insert ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
 			save_members = "insert ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
-			
+
 			break;
 		case SQLITE:
 			create_individual_table = "CREATE TABLE IF NOT EXISTS " + INDIVIDUAL_TABLE +" ("+
@@ -186,16 +190,16 @@ public class SQLInstance extends SQLSerializer{
 			create_versus_table_idx = "CREATE UNIQUE INDEX "+VERSUS_TABLE+"_idx ON " +VERSUS_TABLE+" ("+ID1+")";
 
 			insert_versus_record = "insert or replace into "+VERSUS_TABLE+" VALUES(?,?,?,?,?)";
-			
+
 			save_ind_record = "insert or ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
 
 			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?) ";
 
-//			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?," +
-//					"(select "+NAME+" from "+OVERALL_TABLE+" where "+TEAMID+"=?),"+
-//					"?,?,? ,?,? ,?,?,"+
-//					"(select "+COUNT+" from "+OVERALL_TABLE+" where "+TEAMID+"=?))";
-			
+			//			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?," +
+			//					"(select "+NAME+" from "+OVERALL_TABLE+" where "+TEAMID+"=?),"+
+			//					"?,?,? ,?,? ,?,?,"+
+			//					"(select "+COUNT+" from "+OVERALL_TABLE+" where "+TEAMID+"=?))";
+
 			save_members = "insert or ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
 		}
 
@@ -396,6 +400,8 @@ public class SQLInstance extends SQLSerializer{
 				case TIE: /// whoevers name is less stores the data
 					if (id.compareTo(oid) > 0)
 						continue;
+				default:
+					break;
 				}
 				Timestamp ts = new Timestamp((wlt.date /1000)*1000);
 				while (times.contains(ts)){ /// Since mysql can only handle seconds, increment to first free second
@@ -506,6 +512,31 @@ public class SQLInstance extends SQLSerializer{
 		return list;
 	}
 
+	public List<WLTRecord> getWinsSince(String id, Long time) {
+		RSCon rscon = null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = new Date(time);
+		String datestr = dateFormat.format(date);
+		rscon = executeQuery(get_wins_since,id,id, datestr);
+		List<WLTRecord> list = new ArrayList<WLTRecord>();
+		if (rscon != null){
+			try {
+				ResultSet rs = rscon.rs;
+				while (rs.next()){
+					WLTRecord wlt = parseWLTRecord(rs);
+					if (wlt == null)
+						continue;
+					list.add(wlt);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally{
+				closeConnection(rscon);
+			}
+		}
+		return list;
+	}
+
 	public void realsaveVersusRecords(Collection<VersusRecord> types) {
 		if (types==null)
 			return;
@@ -514,7 +545,7 @@ public class SQLInstance extends SQLSerializer{
 		for (VersusRecord or: types){
 			/// Whichever id is less stores the information to avoid redundancy
 			/// Alkarin vs Yodeler. Alkarin stores the info
-			if (or.ids.get(0).compareTo(or.ids.get(1)) > 0) 
+			if (or.ids.get(0).compareTo(or.ids.get(1)) > 0)
 				continue;
 			batch.add(Arrays.asList(new Object[]{or.ids.get(0),or.ids.get(1),or.wins,or.losses,or.ties}));
 		}

@@ -194,6 +194,5 @@ public interface TrackerInterface{
 	 * @return
 	 */
 	public Version getVersion();
-	
-
+	public List<WLTRecord> getWinsSince(Stat stat, Long time);
 }

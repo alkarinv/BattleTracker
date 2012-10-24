@@ -35,6 +35,7 @@ public class FileLogger {
 			StringBuilder buf = new StringBuilder();
 			Formatter form = new Formatter(buf);
 			form.format(node, varArgs);
+			form.close();
 			msgs.add(sdf.format(cal.getTime()).toString() + "," + buf.toString() +"\n");
 			return msgs.size();
 		} catch(Exception e){

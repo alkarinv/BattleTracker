@@ -1,5 +1,7 @@
-showBukkitDeathMessages: false # turn on and off normal bukkit death messages
-sendPVPDeathMessages: true # send Messages on PvP deaths
+showBukkitPVPMessages: false # turn on and off normal bukkit death messages for pvp
+showBukkitPVEMessages: false # turn on and off normal bukkit death messages for pve
+sendPVPDeathMessages: true # send Custom Messages on PvP deaths
+sendPVEDeathMessages: true # send Custom Messages on PvE deaths
 
 ### Track Player vs Player stats
 trackPvP: true
@@ -16,7 +18,7 @@ chatChannel: "Global" ## Which channel to use
 rampageTime: 7
 
 ### Display a player is on a streak messages every x kills
-streakMessagesEvery: 10
+streakMessagesEvery: 15
 
 SQLOptions:
   type: sqlite # sqlite or mysql

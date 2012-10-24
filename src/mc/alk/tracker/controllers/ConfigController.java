@@ -2,16 +2,18 @@ package mc.alk.tracker.controllers;
 
 import java.io.File;
 
+import mc.alk.tracker.Defaults;
+
 import org.bukkit.configuration.file.YamlConfiguration;
 /**
- * 
+ *
  * @author alkarin
  *
  */
 public class ConfigController {
 	static YamlConfiguration config;
 	static File f = null;
-	
+
 	public static boolean getBoolean(String node) {return config.getBoolean(node, false);}
 	public static boolean getBoolean(String node,boolean b) {return config.getBoolean(node, b);}
 	public static  String getString(String node) {return config.getString(node,null);}
@@ -27,5 +29,7 @@ public class ConfigController {
 
 	public static void loadAll(){
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
+		Defaults.RAMPAGE_TIME = config.getInt("rampageTime", 7);
+		Defaults.STREAK_EVERY = config.getInt("streakMessagesEvery", 15);
 	}
 }
