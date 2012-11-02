@@ -6,6 +6,7 @@ import java.util.List;
 
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.controllers.TrackerImpl;
+import mc.alk.tracker.events.MaxRatingChangeEvent;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.ranking.EloCalculator;
 import mc.alk.tracker.util.Cache.CacheObject;
@@ -22,7 +23,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	protected int streak = 0, maxStreak =0;
 	protected int count = 1; /// How many members are in the team
 	List<String> members ;
-	
+
 	VersusRecords vRecord = null;
 	private TrackerImpl parent;
 
@@ -90,12 +91,19 @@ public abstract class Stat extends CacheObject<String,Stat>{
 
 	public void setRanking(float ranking){
 		this.ranking = ranking;
-		if (this.ranking > maxRanking)
+		if (this.ranking > maxRanking){
+			int threshold =  ( ((int)maxRanking) /100) *100 + 100;
+			double oldRating = maxRanking;
 			maxRanking = this.ranking;
+			if (maxRanking < threshold && this.ranking >= threshold){
+				maxRanking = this.ranking;
+				new MaxRatingChangeEvent(this,oldRating).callSyncEvent();
+			}
+		}
 		setDirty();
 	}
-	
-	@Override 
+
+	@Override
 	public boolean equals( Object obj ) {
 		if(this == obj) return true;
 		if((obj == null) || (obj.getClass() != this.getClass())) return false;
@@ -117,7 +125,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	}
 
 	public void win(Stat ts) {
-		if (Defaults.DEBUG_ADD_RECORDS) System.out.println("BT Debug: win: tsID="+ts.getStrID() + 
+		if (Defaults.DEBUG_ADD_RECORDS) System.out.println("BT Debug: win: tsID="+ts.getStrID() +
 				"  parent=" + parent +"  " + (parent !=null? parent.getSQL() : "null") + " key=" + getKey());
 		wins++;
 		streak++;
@@ -185,6 +193,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 		//		System.out.println("afterwards name="+name);
 	}
 
+	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("[Team=" + getName() + " ["+getRanking()+":"+getKDRatio()+"](" + getWins() + ":" + getLosses() + ":" + getStreak() +") id="+strid +
@@ -194,7 +203,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 			HashMap<String,List<WLTRecord>> records = vRecord.getIndividualRecords();
 			if (records != null){
 				for (String tk : records.keySet()){
-					sb.append(tk +":" + vRecord.getIndividualRecords().get(tk) +" ," );}	
+					sb.append(tk +":" + vRecord.getIndividualRecords().get(tk) +" ," );}
 			}
 		}
 		sb.append("]");

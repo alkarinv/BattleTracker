@@ -231,15 +231,16 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		Stat ts1 = cache.get(ts,ts);
 		ts1.incWins();
 		Collection<Stat> lstats = new ArrayList<Stat>();
-		//		Set<Player> players = new HashSet<Player>();
 		for (Collection<Player> t : teams){
 			TeamStat loser = new TeamStat(toStringCollection(t));
 			Stat lstat = cache.get(loser,loser);
+			if (lstat == null){
+				cache.put(loser);
+				lstat = loser;
+			}
 			lstat.incLosses();
 			lstats.add(lstat);
 		}
-		//		TeamStat ts3 = stats.loadTeam(players);
-		//		win(wlt, ts1, teamstats,ts3);
 		rc.changeRankings(ts1, lstats, false);
 	}
 
