@@ -14,11 +14,13 @@ import mc.alk.tracker.util.Util;
 
 import org.bukkit.entity.Player;
 
+import com.alk.util.Log;
+
 public abstract class Stat extends CacheObject<String,Stat>{
 	protected String strid = null;
 	protected String name;
-	protected float ranking = EloCalculator.DEFAULT_ELO;
-	protected float maxRanking = ranking;
+	protected float rating = EloCalculator.DEFAULT_ELO;
+	protected float maxRating = rating;
 	protected int wins = 0, losses= 0, ties = 0;
 	protected int streak = 0, maxStreak =0;
 	protected int count = 1; /// How many members are in the team
@@ -42,8 +44,10 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	public String getStrID(){return strid;}
 	public void setName(String name) {
 		this.name = name; setDirty();
-		if (name != null && name.length() > 32 )
+		if (strid != null && strid.length() > 32 ){
+			Log.err("NAME = " + name +"    strid=" + strid);
 			Util.printStackTrace();
+		}
 
 	}
 
@@ -84,19 +88,25 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	public void endStreak() {streak=0;setDirty();}
 	public int getMaxStreak() {return maxStreak;}
 	public void setMaxStreak(int maxStreak) {this.maxStreak = maxStreak;setDirty();}
-	public void setMaxRanking(int maxRanking) {this.maxRanking = maxRanking;setDirty();}
+	public void setMaxRating(int maxRating) {this.maxRating = maxRating;setDirty();}
 
-	public int getRanking() {return (int) ranking;}
-	public int getMaxRanking() {return (int) maxRanking;}
+	public int getRating() {return (int) rating;}
+	public int getMaxRating() {return (int) maxRating;}
 
-	public void setRanking(float ranking){
-		this.ranking = ranking;
-		if (this.ranking > maxRanking){
-			int threshold =  ( ((int)maxRanking) /100) *100 + 100;
-			double oldRating = maxRanking;
-			maxRanking = this.ranking;
-			if (maxRanking < threshold && this.ranking >= threshold){
-				maxRanking = this.ranking;
+	@Deprecated
+	public int getRanking() {return (int) rating;}
+
+	@Deprecated
+	public int getMaxRanking() {return (int) maxRating;}
+
+	public void setRating(float rating){
+		this.rating = rating;
+		if (this.rating > maxRating){
+			int threshold =  ( ((int)maxRating) /100) *100 + 100;
+			double oldRating = maxRating;
+			maxRating = this.rating;
+			if (maxRating < threshold && this.rating >= threshold){
+				maxRating = this.rating;
 				new MaxRatingChangeEvent(this,oldRating).callSyncEvent();
 			}
 		}
@@ -196,7 +206,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		sb.append("[Team=" + getName() + " ["+getRanking()+":"+getKDRatio()+"](" + getWins() + ":" + getLosses() + ":" + getStreak() +") id="+strid +
+		sb.append("[Team=" + getName() + " ["+getRating()+":"+getKDRatio()+"](" + getWins() + ":" + getLosses() + ":" + getStreak() +") id="+strid +
 				",count="+count+",p.size="+ (members==null?"null" : members.size()) );
 		if (vRecord != null){
 			sb.append("  [Kills]= ");

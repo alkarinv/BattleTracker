@@ -251,13 +251,13 @@ public class SQLInstance extends SQLSerializer{
 		return createStatList(rscon);
 	}
 
-	public List<Stat> getTopXRanking(int x, int teamcount) {
+	public List<Stat> getTopXRating(int x, int teamcount) {
 		if (x <= 0){
 			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_elo,teamcount,x);
 		return createStatList(rscon);
 	}
-	public List<Stat> getTopXMaxRanking(int x, int teamcount) {
+	public List<Stat> getTopXMaxRating(int x, int teamcount) {
 		if (x <= 0){
 			x = Integer.MAX_VALUE;}
 		RSCon rscon = executeQuery(get_topx_maxelo,teamcount,x);
@@ -342,10 +342,10 @@ public class SQLInstance extends SQLSerializer{
 		ts.setLosses(deaths);
 		ts.setStreak(streak);
 		ts.setTies(ties);
-		ts.setRanking(elo);
+		ts.setRating(elo);
 		ts.setCount(count);
 		ts.setMaxStreak(maxStreak);
-		ts.setMaxRanking(maxElo);
+		ts.setMaxRating(maxElo);
 
 		if (DEBUG) System.out.println("stat = " + ts);
 		return ts;
@@ -430,11 +430,11 @@ public class SQLInstance extends SQLSerializer{
 			String name= stat.getName();
 			if (name!= null && name.length() > TEAM_NAME_LENGTH){
 				name = null;}
-			if (stat.getRanking() < 0 || stat.getRanking() > 200000){
-				Log.err("ELO OUT OF RANGE " + stat.getRanking() +"   stat=" + stat);
+			if (stat.getRating() < 0 || stat.getRating() > 200000){
+				Log.err("ELO OUT OF RANGE " + stat.getRating() +"   stat=" + stat);
 			}
 			batch.add(Arrays.asList(new Object[]{stat.getStrID(),name, stat.getWins(), stat.getLosses(),stat.getTies(),
-					stat.getStreak(),stat.getMaxStreak(), stat.getRanking(),stat.getMaxRanking(), stat.getCount()}));
+					stat.getStreak(),stat.getMaxStreak(), stat.getRating(),stat.getMaxRating(), stat.getCount()}));
 		}
 		try{
 			executeBatch(insert_overall_totals, batch);
@@ -560,8 +560,8 @@ public class SQLInstance extends SQLSerializer{
 		return getInteger("select count(*) from " + INDIVIDUAL_TABLE);
 	}
 
-	public Integer getRanking(int ranking, int teamSize) {
-		Integer rank = getInteger(get_rank, ranking, teamSize);
+	public Integer getRanking(int rating, int teamSize) {
+		Integer rank = getInteger(get_rank, rating, teamSize);
 		return rank != null ? rank + 1: null;
 	}
 }

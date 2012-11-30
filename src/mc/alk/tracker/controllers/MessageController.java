@@ -11,8 +11,10 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.alk.controllers.MC;
+import com.alk.util.InventoryUtil;
 import com.dthielke.herochat.Herochat;
 
 /**
@@ -122,11 +124,13 @@ public class MessageController {
 		return formatMessage(PVE_PREFIX, msg,killer,target, weapon, null);
 	}
 
-	public static String getPvPMessage(boolean melee, String killer, String target, String weapon){
+	public static String getPvPMessage(boolean melee, String killer, String target, ItemStack weapon){
 		String node=null;
 		List<String> messages = null;
+		String wpnName = null;
 		if (weapon != null){
-			node = "pvp."+ weapon;
+			node = "pvp."+ weapon.getType().name().toLowerCase();
+			wpnName = InventoryUtil.getCustomName(weapon);
 			messages = config.getStringList(node);
 		}
 		if (messages == null || messages.isEmpty()){
@@ -139,10 +143,10 @@ public class MessageController {
 		}
 
 		String msg = messages.get(r.nextInt(messages.size()));
-		return formatMessage(PVP_PREFIX, msg,killer,target, weapon,null);
+		return formatMessage(PVP_PREFIX, msg,killer,target, wpnName,null);
 	}
 
-	public static String getSpecialMessage(SpecialType type, int nKills, String killer, String target, String weapon){
+	public static String getSpecialMessage(SpecialType type, int nKills, String killer, String target, ItemStack weapon){
 		String node = null;
 		switch (type){
 		case STREAK: node = "special.streak." + nKills; break;

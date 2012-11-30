@@ -9,13 +9,13 @@ public class EloCalculator implements RankingCalculator {
 	public static final float DEFAULT_ELO = 1250;
 
 	float defaultElo, spread;
-	
+
 	public String getName(){
 		return "Elo";
 	}
 	private float eloChange(Stat p1, Stat p2, float result){
-		final float k = getK(p1.getRanking());
-		final float Di = p2.getRanking() - p1.getRanking();
+		final float k = getK(p1.getRating());
+		final float Di = p2.getRating() - p1.getRating();
 
 		final float expected = (float) ( 1.0f / (1 + Math.pow(10, Di/spread)));
 
@@ -23,22 +23,22 @@ public class EloCalculator implements RankingCalculator {
 		return eloChange;
 	}
 
-	public void changeRankings(Stat p1, Stat p2, boolean tie){
+	public void changeRatings(Stat p1, Stat p2, boolean tie){
 		float result = tie ? 0.5f : 1.0f;
 		final float eloChange = eloChange(p1,p2,result);
-		final float p1elo = p1.getRanking()+eloChange;
-		final float p2elo = p2.getRanking()-eloChange;
-		p1.setRanking(p1elo > MIN_ELO? p1elo : MIN_ELO);
-		p2.setRanking(p2elo > MIN_ELO? p2elo : MIN_ELO);
+		final float p1elo = p1.getRating()+eloChange;
+		final float p2elo = p2.getRating()-eloChange;
+		p1.setRating(p1elo > MIN_ELO? p1elo : MIN_ELO);
+		p2.setRating(p2elo > MIN_ELO? p2elo : MIN_ELO);
 		//				System.out.println(p1.getElo() + " : " + p2.getElo());
 	}
 
-	public void changeRankings(Stat ts1, Collection<Stat> teamstats, boolean tie) {
+	public void changeRatings(Stat ts1, Collection<Stat> teamstats, boolean tie) {
 		float result = tie ? 0.5f : 1.0f;
 		for (Stat ts : teamstats){
 			final double eloChange = eloChange(ts1,ts,result) / teamstats.size();
-			ts1.setRanking((int) (ts1.getRanking() + eloChange));
-			ts.setRanking((int) (ts.getRanking() - eloChange));	
+			ts1.setRating((int) (ts1.getRating() + eloChange));
+			ts.setRating((int) (ts.getRating() - eloChange));
 		}
 	}
 
@@ -60,11 +60,11 @@ public class EloCalculator implements RankingCalculator {
 		this.spread = spread;
 	}
 
-	public void setDefaultRanking(float elo) {
+	public void setDefaultRating(float elo) {
 		defaultElo = elo;
 	}
 
-	public float getDefaultRanking() {
+	public float getDefaultRating() {
 		return defaultElo;
 	}
 }

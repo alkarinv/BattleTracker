@@ -54,12 +54,11 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		Stat stat;
 		for (int i=0;i<min;i++){
 			stat = stats.get(i);
-			sendMessage(sender,"&6"+i+"&e: &c" + stat.getName()+"&6["+stat.getRanking()+"] &eWins(&6"+stat.getWins()+
+			sendMessage(sender,"&6"+(i+1)+"&e: &c" + stat.getName()+"&6["+stat.getRating()+"] &eWins(&6"+stat.getWins()+
 					"&e),Losses(&8"+stat.getLosses()+"&e),Streak(&b"+stat.getStreak()+"&e) W/L(&c"+stat.getKDRatio()+"&e)");
 		}
 		return true;
 	}
-
 
 	@MCCommand(cmds={"versus","vs"}, inGame=true, usage="vs <player>")
 	public boolean versus(Player player1, String player2){
@@ -86,8 +85,8 @@ public class TrackerExecutor extends CustomCommandExecutor {
 
 		VersusRecord or = stat1.getRecordVersus(stat2);
 		sendMessage(sender,"&4======================== &6"+ti.getInterfaceName()+" &4========================");
-		sendMessage(sender,"&4================ &6"+stat1.getName()+" ("+stat1.getRanking()+")&e vs &6" +
-				stat2.getName()+"("+stat2.getRanking()+") &4================");
+		sendMessage(sender,"&4================ &6"+stat1.getName()+" ("+stat1.getRating()+")&e vs &6" +
+				stat2.getName()+"("+stat2.getRating()+") &4================");
 		sendMessage(sender,"&eOverall Record (&2"+or.wins +" &e:&8 "+or.losses+" &e)");
 		List<WLTRecord> records = ti.getVersusRecords(stat1.getName(), stat2.getName(),x);
 		int min = Math.min(x, records.size());
@@ -125,7 +124,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 
 	protected String getFullStatMsg(Stat stat) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("&5"+stat.getName() +"&6["+stat.getRanking()+"] &eWins(&6"+stat.getWins()+"&e),Losses(&8"+stat.getLosses()+
+		sb.append("&5"+stat.getName() +"&6["+stat.getRating()+"] &eWins(&6"+stat.getWins()+"&e),Losses(&8"+stat.getLosses()+
 				"&e),Streak(&b"+stat.getStreak()+"&e),MaxStreak(&7"+stat.getMaxStreak()+"&e) W/L(&c"+stat.getKDRatio()+"&e)");
 		return sb.toString();
 	}

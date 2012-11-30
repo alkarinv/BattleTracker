@@ -5,36 +5,37 @@ import java.util.Collection;
 import mc.alk.tracker.objects.Stat;
 
 public interface RankingCalculator {
-	
+
 	/**
-	 * What is this ranking called
-	 * @return name of ranking (like elo)
+	 * What is this rating called
+	 * @return name of rating (like elo)
 	 */
 	public String getName();
+
 	/**
-	 * Set the default ranking
-	 * @param initialRanking
+	 * Set the default rating
+	 * @param initialRating
 	 */
-	public void setDefaultRanking(float initialRanking);
+	public void setDefaultRating(float initialRanking);
 	/**
-	 * Get the default ranking
+	 * Get the default rating
 	 * @return
 	 */
-	public float getDefaultRanking();
-	
+	public float getDefaultRating();
+
 	/**
-	 * Change the rankings of stat1 and stat2
+	 * Change the ratings of stat1 and stat2
 	 * @param stat1
 	 * @param stat2
 	 * @param tie
 	 */
-	public void changeRankings(Stat stat1, Stat stat2, boolean tie);
-	
+	public void changeRatings(Stat stat1, Stat stat2, boolean tie);
+
 	/**
-	 * Change the rankings of a group of stats
+	 * Change the ratings of a group of stats
 	 * @param stat1
 	 * @param stats
 	 * @param tie
 	 */
-	public void changeRankings(Stat stat1, Collection<Stat> stats, boolean tie);
+	public void changeRatings(Stat stat1, Collection<Stat> stats, boolean tie);
 }

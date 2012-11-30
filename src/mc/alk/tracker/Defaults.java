@@ -11,4 +11,7 @@ public class Defaults {
 	public static int RAMPAGE_TIME = 7000;
 	public static boolean DISABLE_PVP_MESSAGES = false;
 	public static boolean DISABLE_PVE_MESSAGES = false;
+
+	public static boolean PVP_TRACK = true;
+	public static boolean PVP_MSG = true;
 }

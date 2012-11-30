@@ -7,7 +7,7 @@ sendPVEDeathMessages: true # send Custom Messages on PvE deaths
 trackPvP: true
 
 ### Track Player vs Environment stats
-trackPvE: true
+trackPvE: false
 
 ### If showing PvP messages should we use a Herochat channel
 useHeroChat: false

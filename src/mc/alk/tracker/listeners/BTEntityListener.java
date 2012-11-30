@@ -14,6 +14,7 @@ import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -32,7 +33,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class BTEntityListener implements Listener{
 	//	private static final int DAMAGE_TIMEOUT = 60000;
 	static JavaPlugin plugin;
-
+	static final String UNKNOWN = "unknown";
 	ConcurrentHashMap<String,Long> lastDamageTime = new ConcurrentHashMap<String,Long>();
 	ConcurrentHashMap<String,RampageStreak> lastKillTime = new ConcurrentHashMap<String,RampageStreak>();
 	Random r = new Random();
@@ -52,7 +53,21 @@ public class BTEntityListener implements Listener{
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerDeath(PlayerDeathEvent event) {
+		ede(event);
+	}
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDeath(EntityDeathEvent event) {
+		if (event instanceof PlayerDeathEvent)
+			return;
+		/// we have a player killing a mob, if we are not tracking pve
+		/// we don't need to enter, no messages are usually sent for this
+		if (!ConfigController.getBoolean("trackPvE",false))
+			return;
+		ede(event);
+	}
+
+	private void ede(EntityDeathEvent event) {
 		String target, killer;
 		boolean targetPlayer = false, killerPlayer = false;
 		boolean isMelee = true;
@@ -68,46 +83,55 @@ public class BTEntityListener implements Listener{
 		} else {
 			target = targetEntity.getType().getName();
 		}
-		//		FileLogger.log("onEntityDeath " + target +" targetPlayer=" + targetPlayer +"   tracking=" + TrackerController.dontTrack(target));
 		/// Should we be tracking this person
-		if (targetPlayer && TrackerController.dontTrack(target)){
+		if (targetPlayer && (TrackerController.dontTrack(target))){
 			if (event instanceof PlayerDeathEvent)
 				((PlayerDeathEvent) event).setDeathMessage(""); /// Set to none, will cancel all non pvp messages
 			return;
 		}
-
-		EntityDamageEvent lastDamageCause = event.getEntity().getLastDamageCause();
+		if (!targetPlayer && !ConfigController.getBoolean("trackPvP") && !ConfigController.getBoolean("sendPVPDeathMessages")){
+//		if (!targetPlayer && !Defaults.PVP_TRACK && !Defaults.PVP_MSG){
+			return;
+		}
+		EntityDamageEvent lastDamageCause = targetEntity.getLastDamageCause();
 
 		/// Get our killer
 		if (lastDamageCause instanceof EntityDamageByEntityEvent){
-			EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) lastDamageCause;
-			if (edbee.getDamager() instanceof Player) { /// killer is player
-				Player pk = ((Player) edbee.getDamager());
+			Entity damager = ((EntityDamageByEntityEvent) lastDamageCause).getDamager();
+			if (damager instanceof Player) { /// killer is player
+				Player pk = (Player) damager;
 				killer = pk.getName();
 				killerPlayer = true;
 				killingWeapon = pk.getItemInHand();
-			} else if (edbee.getDamager() instanceof Projectile) { /// we have some sort of projectile
+			} else if (damager instanceof Projectile) { /// we have some sort of projectile
 				isMelee = false;
-				Projectile proj = (Projectile) edbee.getDamager();
+				Projectile proj = (Projectile) damager;
 				if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
 					killerPlayer = true;
 					killer = ((Player) proj.getShooter()).getName();
 				} else if (proj.getShooter() != null){ /// projectile shot by some mob, or other source
 					killer = proj.getShooter().getType().getName();
 				} else {
-					killer = "unknown"; /// projectile was null?
+					killer = UNKNOWN; /// projectile was null?
+				}
+			} else if (damager instanceof Tameable && ((Tameable) damager).isTamed()) {
+				AnimalTamer at = ((Tameable) damager).getOwner();
+				if (at != null){
+					if (at instanceof Player)
+						killerPlayer = true;
+					killer = at.getName();
+				} else {
+					killer = damager.getType().getName();
 				}
 			} else { /// Killer is not a player
-				killer = edbee.getDamager().getType().getName();
+				killer = damager.getType().getName();
 			}
 		} else {
 			if (lastDamageCause == null || lastDamageCause.getCause() == null)
-				killer  = "unknown";
+				killer  = UNKNOWN;
 			else
 				killer = lastDamageCause.getCause().name();
 		}
-		//		FileLogger.log("onEntityDeath " + target +" targetPlayer=" + targetPlayer +"   tracking=" + TrackerController.dontTrack(target)+
-		//				"  killerPlayer=" + killerPlayer +"   killer=" + killer);
 
 		if (killerPlayer && TrackerController.dontTrack(killer))
 			return;
@@ -124,9 +148,8 @@ public class BTEntityListener implements Listener{
 			}
 			/// Check sending messages
 			if (ConfigController.getBoolean("sendPVPDeathMessages",true)){
-				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
-
-				String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,wpn);
+//				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
+				String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,killingWeapon);
 				pde.setDeathMessage(msg);
 			} else if (!ConfigController.getBoolean("showBukkitPVPMessages",false)){
 				pde.setDeathMessage(null);
@@ -136,9 +159,9 @@ public class BTEntityListener implements Listener{
 		} else { /// One player, One other
 			/// Get rid of Craft before mobs.. CraftSpider -> Spider
 			if (!killerPlayer && killer.contains("Craft")){
-				killer = killer.replaceAll("Craft", "");}
+				killer = killer.substring(5);}
 			if (!targetPlayer && target.contains("Craft")){
-				target = target.replaceAll("Craft", "");}
+				target = target.substring(5);}
 
 			/// Should we track the kills?
 			if (ConfigController.getBoolean("trackPvE",true)){
@@ -165,8 +188,7 @@ public class BTEntityListener implements Listener{
 	}
 
 	public String getPvPDeathMessage(String killer, String target, boolean isMeleeDeath,
-			TrackerInterface ti, String killingWeapon){
-
+			TrackerInterface ti, ItemStack killingWeapon){
 		/// Check for a rampage
 		try {
 			RampageStreak lastKill = lastKillTime.get(killer);
