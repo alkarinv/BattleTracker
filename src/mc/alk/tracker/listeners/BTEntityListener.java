@@ -90,7 +90,7 @@ public class BTEntityListener implements Listener{
 			return;
 		}
 		if (!targetPlayer && !ConfigController.getBoolean("trackPvP") && !ConfigController.getBoolean("sendPVPDeathMessages")){
-//		if (!targetPlayer && !Defaults.PVP_TRACK && !Defaults.PVP_MSG){
+			//		if (!targetPlayer && !Defaults.PVP_TRACK && !Defaults.PVP_MSG){
 			return;
 		}
 		EntityDamageEvent lastDamageCause = targetEntity.getLastDamageCause();
@@ -135,6 +135,7 @@ public class BTEntityListener implements Listener{
 
 		if (killerPlayer && TrackerController.dontTrack(killer))
 			return;
+
 		/// Decide what to do
 		if (targetPlayer && killerPlayer){
 			/// Check to see if we add the records
@@ -148,7 +149,7 @@ public class BTEntityListener implements Listener{
 			}
 			/// Check sending messages
 			if (ConfigController.getBoolean("sendPVPDeathMessages",true)){
-//				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
+				//				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
 				String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,killingWeapon);
 				pde.setDeathMessage(msg);
 			} else if (!ConfigController.getBoolean("showBukkitPVPMessages",false)){
@@ -162,7 +163,6 @@ public class BTEntityListener implements Listener{
 				killer = killer.substring(5);}
 			if (!targetPlayer && target.contains("Craft")){
 				target = target.substring(5);}
-
 			/// Should we track the kills?
 			if (ConfigController.getBoolean("trackPvE",true)){
 				addRecord(worldTi, killer,target,WLT.WIN, false);}
