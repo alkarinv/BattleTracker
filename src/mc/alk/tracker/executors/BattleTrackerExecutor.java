@@ -1,6 +1,7 @@
 package mc.alk.tracker.executors;
 
 import mc.alk.tracker.Defaults;
+import mc.alk.tracker.Tracker;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -45,13 +46,20 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		}
 	}
 
-	@MCCommand(cmds={"spawn"},inGame=true,usage="addkill <player1> <player2>: this is a debugging method")
+	@MCCommand(cmds={"spawn"},op=true, inGame=true,usage="addkill <player1> <player2>: this is a debugging method")
 	public boolean spawn(Player sender, Integer n){
 		World w = Bukkit.getWorld("world");
 		for (int i=0;i<n;i++){
 			w.spawnEntity(sender.getLocation(), EntityType.ZOMBIE);
 		}
 		return true;
+	}
+
+	@MCCommand(cmds={"reload"},perm="tracker.admin")
+	public boolean reload(CommandSender sender){
+		Tracker.getSelf().loadConfigs();
+
+		return sendMessage(sender, "&2Configs reloaded for BattleTracker");
 	}
 
 }

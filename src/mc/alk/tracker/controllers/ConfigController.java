@@ -31,5 +31,7 @@ public class ConfigController {
 		try {config.load(f);} catch (Exception e){e.printStackTrace();}
 		Defaults.RAMPAGE_TIME = config.getInt("rampageTime", 7);
 		Defaults.STREAK_EVERY = config.getInt("streakMessagesEvery", 15);
+		Defaults.DISABLE_PVE_MESSAGES = !config.getBoolean("sendPVEDeathMessages");
+		Defaults.DISABLE_PVP_MESSAGES= !config.getBoolean("sendPVPDeathMessages");
 	}
 }

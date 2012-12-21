@@ -26,10 +26,9 @@ public class Tracker extends MCPlugin{
 		super.onEnable();
 		plugin = this;
 		createPluginFolder();
-		ConfigController.setConfig(load("/default_files/config.yml",getDataFolder().getPath() +"/config.yml"));
+		loadConfigs();
 		getServer().getPluginManager().registerEvents(new BTEntityListener(), this);
 		getServer().getPluginManager().registerEvents(new BTPluginListener(), this);
-		MessageController.setConfig(load("/default_files/messages.yml",getDataFolder().getPath() +"/messages.yml"));
 
 		getCommand("battleTracker").setExecutor(new BattleTrackerExecutor());
 		getCommand("pvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
@@ -41,6 +40,11 @@ public class Tracker extends MCPlugin{
 	@Override
 	public void onDisable(){
 		saveStats();
+	}
+
+	public void loadConfigs(){
+		ConfigController.setConfig(load("/default_files/config.yml",getDataFolder().getPath() +"/config.yml"));
+		MessageController.setConfig(load("/default_files/messages.yml",getDataFolder().getPath() +"/messages.yml"));
 	}
 
 	public static Tracker getSelf() {
@@ -65,7 +69,7 @@ public class Tracker extends MCPlugin{
 			if (!interfaces.containsKey(iname)){
 				if (rankingCalculator == null)
 					interfaces.put(iname, new TrackerImpl(interfaceName));
-				else 
+				else
 					interfaces.put(iname, new TrackerImpl(interfaceName,rankingCalculator));
 			}
 			return interfaces.get(iname);
