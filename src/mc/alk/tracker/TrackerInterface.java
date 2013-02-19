@@ -4,35 +4,38 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import mc.alk.battleCore.Version;
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
-import mc.alk.tracker.ranking.RankingCalculator;
+import mc.alk.tracker.ranking.RatingCalculator;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.alk.battleCore.Version;
 
 
 public interface TrackerInterface{
+	public void printTopX(CommandSender sender, StatType statType, int x);
+	public void printTopX(CommandSender sender, StatType statType, int x,String headerMsg, String bodyMsg);
+
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize);
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize, String headerMsg, String bodyMsg);
-	
-	public void addStatRecord(Stat team1, Stat team2, WLT wlt,boolean saveIndividualRecord);
 
-	public void addPlayerRecord(String p1, String p2, WLT wlt);	
-	public void addPlayerRecord(String p1, String p2, WLT wlt, boolean saveIndividualRecord);
+	public void addStatRecord(Stat team1, Stat team2, WLT wlt);
+
+	public void addPlayerRecord(String p1, String p2, WLT wlt);
 	public void addPlayerRecord(OfflinePlayer p1, OfflinePlayer p2, WLT wlt);
-	
+
 	public void addTeamRecord(String t1, String t2, WLT wlt);
 	public void addTeamRecord(Set<String> team1, Set<String> team2, WLT wlt);
 	public void addTeamRecord(Collection<Player> team1, Collection<Player> team2, WLT wlt);
 
+	public void changePlayerElo(String p1, String p2, WLT wlt);
 
 	public PlayerStat getPlayerRecord(String player) ;
 	public PlayerStat getPlayerRecord(OfflinePlayer player) ;
@@ -45,13 +48,13 @@ public interface TrackerInterface{
 	 * @param playerName
 	 */
 	public void stopTracking(String playerName);
-	
+
 	/**
 	 * Resume tracking stats and resume kill messages for this player
 	 * @param playerName
 	 */
 	public void resumeTracking(String playerName);
-	
+
 	/**
 	 * Stop displaying kill messages for this player
 	 * @param playerName
@@ -99,21 +102,24 @@ public interface TrackerInterface{
 	public Stat loadRecord(Set<Player> players);
 
 	public Stat getRecord(Collection<Player> players);
-	
+
 	public void saveAll();
 
 	public List<Stat> getTopX(StatType statType, int x);
+
+	@Deprecated
 	public List<Stat> getTopXRanking(int x);
+	public List<Stat> getTopXRating(int x);
 	public List<Stat> getTopXLosses(int x);
 	public List<Stat> getTopXWins(int x);
 	public List<Stat> getTopXKDRatio(int x);
 
-	public List<Stat> getTopX(StatType statType, int x, int teamSize);
-	public List<Stat> getTopXRanking(int x, int teamSize);
-	public List<Stat> getTopXLosses(int x, int teamSize);
-	public List<Stat> getTopXWins(int x, int teamSize);
-	public List<Stat> getTopXKDRatio(int x, int teamSize);
-	
+	public List<Stat> getTopX(StatType statType, int x, Integer teamSize);
+	public List<Stat> getTopXRanking(int x, Integer teamSize);
+	public List<Stat> getTopXLosses(int x, Integer teamSize);
+	public List<Stat> getTopXWins(int x, Integer teamSize);
+	public List<Stat> getTopXKDRatio(int x, Integer teamSize);
+
 	/**
 	 * Get the rank of this player
 	 * @param sender
@@ -127,9 +133,9 @@ public interface TrackerInterface{
 	 * @return
 	 */
 	public Integer getRank(String name);
-	
+
 	/**
-	 * reset the stats for this interface 
+	 * reset the stats for this interface
 	 */
 	public void resetStats();
 
@@ -139,24 +145,42 @@ public interface TrackerInterface{
 	 */
 	public void onlyTrackOverallStats(boolean b);
 
+
+	/**
+	 * Set the rating of the given player
+	 * @param player
+	 * @param rating
+	 * @return
+	 */
+	public boolean setRating(OfflinePlayer player, int rating);
+
+	/**
+	 * Get the rating calculator being used(default EloCalculator)
+	 * @return
+	 */
+	public RatingCalculator getRatingCalculator();
+
+
 	/**
 	 * Get the ranking calculator being used(default EloCalculator)
 	 * @return
 	 */
-	public RankingCalculator getRankingCalculator();
+	@Deprecated
+	public RatingCalculator getRankingCalculator();
 
 	/**
 	 * Set the ranking of the given player
 	 * @param player
-	 * @param ranking
+	 * @param rating
 	 * @return
 	 */
-	public boolean setRanking(OfflinePlayer player, int elo);
-	
+	@Deprecated
+	public boolean setRanking(OfflinePlayer player, int rating);
+
 
 	/**
 	 * Get the records of player1 vs player2
-	 * @param playerName 
+	 * @param playerName
 	 * @param playerName2
 	 * @param x : the number of records to return, -1 for all
 	 * @return
@@ -164,7 +188,7 @@ public interface TrackerInterface{
 	public List<WLTRecord> getVersusRecords(String playerName, String playerName2, int x);
 
 
-	/** 
+	/**
 	 * What is the name of this interface
 	 * @return
 	 */
@@ -182,13 +206,13 @@ public interface TrackerInterface{
 	 * @param stats
 	 */
 	public void flush();
-	
+
 	/**
 	 * Get how many records are in this interface
 	 * @return
 	 */
 	public int getRecordCount();
-	
+
 	/**
 	 * Returns the Version of BattleTracker
 	 * @return

@@ -2,14 +2,14 @@ name: BattleTracker
 
 main: mc.alk.tracker.Tracker
 
-version: 2.2.7
+version: 2.3.2.1
 
 author: Alkarin
 softdepend: [BattleCore,Herochat,TownyChat]
 description: A tracker for PvP player related events
 commands:
     battleTracker:
-        aliases: [bt,bthelp]
+        aliases: [bt]
         description: Show help menu
         usage: /bt
     pvp:

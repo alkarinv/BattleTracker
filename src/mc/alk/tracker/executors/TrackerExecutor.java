@@ -2,6 +2,7 @@ package mc.alk.tracker.executors;
 
 import java.util.List;
 
+import mc.alk.executors.CustomCommandExecutor;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.objects.Stat;
@@ -18,7 +19,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.alk.executors.CustomCommandExecutor;
 
 public class TrackerExecutor extends CustomCommandExecutor {
 	TrackerInterface ti;
@@ -44,7 +44,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 
 		if (x<=0 || x > 100){
 			return sendMessage(sender,MessageController.getMsg("xBetween", MAX_RECORDS));}
-		List<Stat> stats = st == null ? ti.getTopXRanking(x) : ti.getTopX(st, x);
+		List<Stat> stats = st == null ? ti.getTopXRating(x) : ti.getTopX(st, x);
 		String stname = st == null ? "Ranking" : st.getName();
 		int min = Math.min(x, stats.size());
 		if (min==0){
@@ -106,7 +106,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 			sender.sendMessage("Player not found");
 			return true;}
 
-		ti.addStatRecord(stat, stat2, WLT.WIN,true);
+		ti.addStatRecord(stat, stat2, WLT.WIN);
 		try {
 			VersusRecord or = stat.getRecordVersus(stat2);
 			sendMessage(sender, stat.getName()+ " versus " + stat2.getName()+" (&4"+or.wins +"&e:&8"+or.losses+"&e)");

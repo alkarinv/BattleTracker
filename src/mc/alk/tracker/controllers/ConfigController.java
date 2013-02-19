@@ -33,5 +33,6 @@ public class ConfigController {
 		Defaults.STREAK_EVERY = config.getInt("streakMessagesEvery", 15);
 		Defaults.DISABLE_PVE_MESSAGES = !config.getBoolean("sendPVEDeathMessages");
 		Defaults.DISABLE_PVP_MESSAGES= !config.getBoolean("sendPVPDeathMessages");
+		Defaults.RADIUS 	= config.getInt("msgRadius", 0);
 	}
 }

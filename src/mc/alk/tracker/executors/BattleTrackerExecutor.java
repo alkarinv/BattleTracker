@@ -1,15 +1,18 @@
 package mc.alk.tracker.executors;
 
+import mc.alk.executors.CustomCommandExecutor;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
+import mc.alk.tracker.TrackerInterface;
+import mc.alk.tracker.objects.StatType;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-import com.alk.executors.CustomCommandExecutor;
 
 public class BattleTrackerExecutor extends CustomCommandExecutor {
 
@@ -55,11 +58,38 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
+	@MCCommand(cmds={"setRating"},op=true)
+	public boolean setRating(CommandSender sender, String db, OfflinePlayer player, Integer rating){
+		if (!Tracker.hasInterface(db))
+			return sendMessage(sender,"&c"+db +" does not exist");
+		TrackerInterface ti = Tracker.getInterface(db);
+		ti.setRating(player, rating);
+		return sendMessage(sender, player.getName() +" rating now " + rating);
+	}
+
 	@MCCommand(cmds={"reload"},perm="tracker.admin")
 	public boolean reload(CommandSender sender){
 		Tracker.getSelf().loadConfigs();
 
 		return sendMessage(sender, "&2Configs reloaded for BattleTracker");
+	}
+
+	@MCCommand(cmds={"top"})
+	public boolean top(CommandSender sender, String db){
+		if (!Tracker.hasInterface(db))
+			return sendMessage(sender,"&c"+db +" does not exist");
+		TrackerInterface ti = Tracker.getInterface(db);
+		ti.printTopX(sender, StatType.RATING, 10);
+		return true;
+	}
+
+	@MCCommand(cmds={"top"}, order=2)
+	public boolean top(CommandSender sender, String db, Integer x){
+		if (!Tracker.hasInterface(db))
+			return sendMessage(sender,"&c"+db +" does not exist");
+		TrackerInterface ti = Tracker.getInterface(db);
+		ti.printTopX(sender, StatType.RATING, 10, x);
+		return true;
 	}
 
 }

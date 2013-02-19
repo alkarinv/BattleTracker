@@ -10,9 +10,12 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import mc.alk.battleCore.Version;
+import mc.alk.serializers.SQLSerializerConfig;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
+import mc.alk.tracker.TrackerOptions;
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
@@ -20,7 +23,7 @@ import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.ranking.EloCalculator;
-import mc.alk.tracker.ranking.RankingCalculator;
+import mc.alk.tracker.ranking.RatingCalculator;
 import mc.alk.tracker.serializers.SQLInstance;
 import mc.alk.tracker.util.Cache;
 import mc.alk.tracker.util.Cache.CacheSerializer;
@@ -31,14 +34,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.alk.battleCore.Version;
-import com.alk.serializers.SQLSerializerConfig;
 
 
 public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Stat>{
 	Cache<String, Stat> cache = new Cache<String, Stat>(this);
 	boolean trackIndividual = false;
-	RankingCalculator rc;
+	RatingCalculator rc;
 	SQLInstance sql = null;
 	String tableName;
 
@@ -46,6 +47,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		private static final long serialVersionUID = 1L;
 		public DBConnectionException(String e){super(e);}
 	}
+
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder("[TI=");
@@ -54,17 +56,10 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		return sb.toString();
 	}
 
-	public TrackerImpl(String tableName) throws DBConnectionException{
+	public TrackerImpl(String tableName, TrackerOptions options) throws DBConnectionException{
 		initDB(tableName);
-		EloCalculator ec = new EloCalculator();
-		ec.setDefaultRating((float) ConfigController.getDouble("elo.default",1250));
-		ec.setEloSpread((float) ConfigController.getDouble("elo.spread",400));
-		rc = ec;
-	}
-
-	public TrackerImpl(String tableName, RankingCalculator rankingCalculator) throws DBConnectionException{
-		initDB(tableName);
-		rc = rankingCalculator;
+		rc = options.getRatingCalculator();
+		this.trackIndividual = options.savesIndividualRecords();
 	}
 
 	public TrackerImpl(String type, String db, String urlOrPath, String table, String port, String user, String password) {
@@ -110,42 +105,59 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public void save(List<Stat> stats) {
 		sql.saveAll(stats.toArray(new Stat[stats.size()]));
 	}
+
 	public void save(Stat... stats) {
 		sql.saveAll(stats);
 	}
 
-	public void addStatRecord(Stat team1, Stat team2, WLT wlt,boolean saveIndividualRecord){
-		Stat ts1 = cache.get(team1.getStrID(), team1);
-		Stat ts2 = cache.get(team2.getStrID(), team2);
-		if (ts1 == null){
-			ts1 = team1;
-			ts1.setCache(cache);
-			ts1.setRating(rc.getDefaultRating());
-			cache.put(team1);
+	private Stat getRecord(Stat pStat){
+		Stat stat = cache.get(pStat.getStrID(), pStat);
+		if (stat == null){
+			stat = pStat;
+			stat.setCache(cache);
+			stat.setRating(rc.getDefaultRating());
+			cache.put(pStat);
 		}
-		ts1.setParent(this);
-		if (ts2 == null){
-			ts2 = team2;
-			ts2.setCache(cache);
-			ts2.setRating(rc.getDefaultRating());
-			cache.put(team2);
-		}
-		ts2.setParent(this);
+		stat.setParent(this);
+		return stat;
+	}
+
+	public void addStatRecord(Stat team1, Stat team2, WLT wlt){
+		addStatRecord(team1,team2,wlt,true);
+	}
+
+	private void addStatRecord(Stat team1, Stat team2, WLT wlt, boolean changeWinLossRecords){
+		/// Get our records
+		Stat ts1 = getRecord(team1);
+		Stat ts2 = getRecord(team2);
+
 		if (Defaults.DEBUG_ADD_RECORDS) System.out.println("BT Debug: addStatRecord:sql="+sql + "  ts1 = " + ts1 +"    " + ts2);
 
-		ts1.setSaveIndividual(saveIndividualRecord);
-		ts2.setSaveIndividual(saveIndividualRecord);
+		/// Change win loss record
+		if (changeWinLossRecords){
+			ts1.setSaveIndividual(trackIndividual);
+			ts2.setSaveIndividual(trackIndividual);
+			switch(wlt){
+			case WIN:
+				ts1.win(ts2); ts2.loss(ts1);
+				break;
+			case LOSS:
+				ts1.loss(ts2); ts2.win(ts1);
+				break;
+			case TIE:
+				ts1.tie(ts2); ts2.tie(ts1);
+				break;
+			}
+		}
+		/// Change the elo
 		switch(wlt){
 		case WIN:
-			ts1.win(ts2); ts2.loss(ts1);
 			rc.changeRatings(ts1,ts2,false);
 			break;
 		case LOSS:
-			ts1.loss(ts2); ts2.win(ts1);
 			rc.changeRatings(ts2,ts1,false);
 			break;
 		case TIE:
-			ts1.tie(ts2); ts2.tie(ts1);
 			rc.changeRatings(ts1,ts2,true);
 			break;
 		}
@@ -154,13 +166,13 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public void addPlayerRecord(String p1, String p2, WLT wlt) {
 		Stat ts1 = new PlayerStat(p1);
 		Stat ts2 = new PlayerStat(p2);
-		addStatRecord(ts1, ts2, wlt, true);
+		addStatRecord(ts1, ts2, wlt);
 	}
 
-	public void addPlayerRecord(String p1, String p2, WLT wlt, boolean saveIndividualRecord) {
+	public void changePlayerElo(String p1, String p2, WLT wlt) {
 		Stat ts1 = new PlayerStat(p1);
 		Stat ts2 = new PlayerStat(p2);
-		addStatRecord(ts1, ts2,wlt,saveIndividualRecord);
+		addStatRecord(ts1, ts2, wlt,false);
 	}
 
 	public void addPlayerRecord(OfflinePlayer p1, OfflinePlayer p2, WLT wlt) {
@@ -170,13 +182,13 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public void addTeamRecord(String t1, String t2, WLT wlt) {
 		TeamStat ts1 = new TeamStat(t1,false);
 		TeamStat ts2 = new TeamStat(t2,false);
-		addStatRecord(ts1, ts2,wlt,true);
+		addStatRecord(ts1, ts2,wlt);
 	}
 
 	public void addTeamRecord(Set<String> team1, Set<String> team2, WLT wlt) {
 		TeamStat ts1 = new TeamStat(team1);
 		TeamStat ts2 = new TeamStat(team2);
-		addStatRecord(ts1, ts2,wlt,true);
+		addStatRecord(ts1, ts2,wlt);
 	}
 
 	public void addTeamRecord(Collection<Player> team1, Collection<Player> team2, WLT wlt) {
@@ -188,7 +200,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		for (OfflinePlayer p : team2){
 			names.add(p.getName());}
 		TeamStat ts2 = new TeamStat(names);
-		addStatRecord(ts1, ts2,wlt,true);
+		addStatRecord(ts1, ts2,wlt);
 	}
 
 	public TeamStat getTeamRecord(String teamName) {
@@ -296,44 +308,32 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	public void saveAll() {cache.save();}
 
 
-	public List<Stat> getTopXRanking(int x) { return getTopX(StatType.RANKING,x,1);}
-	public List<Stat> getTopXMaxRanking(int x) {return getTopX(StatType.MAXRANKING,x,1);}
-	public List<Stat> getTopXRating(int x) { return getTopX(StatType.RATING,x,1);}
-	public List<Stat> getTopXMaxRating(int x) {return getTopX(StatType.MAXRATING,x,1);}
-	public List<Stat> getTopXLosses(int x) { return getTopX(StatType.LOSSES,x,1);}
-	public List<Stat> getTopXWins(int x) {return getTopX(StatType.WINS,x,1);}
-	public List<Stat> getTopXKDRatio(int x) { return getTopX(StatType.KDRATIO,x,1);}
+	public List<Stat> getTopXRanking(int x) { return getTopX(StatType.RANKING,x,null);}
+	public List<Stat> getTopXMaxRanking(int x) {return getTopX(StatType.MAXRANKING,x,null);}
+	public List<Stat> getTopXRating(int x) { return getTopX(StatType.RATING,x,null);}
+	public List<Stat> getTopXMaxRating(int x) {return getTopX(StatType.MAXRATING,x,null);}
+	public List<Stat> getTopXLosses(int x) { return getTopX(StatType.LOSSES,x,null);}
+	public List<Stat> getTopXWins(int x) {return getTopX(StatType.WINS,x,null);}
+	public List<Stat> getTopXKDRatio(int x) { return getTopX(StatType.KDRATIO,x,null);}
 
 	public List<Stat> getTopX(StatType statType, int x) {
 		return getTopX(statType,x,1);
 	}
 
-	public List<Stat> getTopXRanking(int x, int teamsize) {return getTopX(StatType.RANKING,x,teamsize);}
-	public List<Stat> getTopXMaxRanking(int x, int teamsize) {return getTopX(StatType.MAXRANKING,x,teamsize);}
-	public List<Stat> getTopXRating(int x, int teamsize) {return getTopX(StatType.RATING,x,teamsize);}
-	public List<Stat> getTopXMaxRating(int x, int teamsize) {return getTopX(StatType.MAXRATING,x,teamsize);}
-	public List<Stat> getTopXStreak(int x, int teamsize) {return getTopX(StatType.STREAK,x,teamsize);}
-	public List<Stat> getTopXMaxStreak(int x, int teamsize) {return getTopX(StatType.MAXSTREAK,x,teamsize);}
-	public List<Stat> getTopXWins(int x, int teamsize) {return getTopX(StatType.WINS,x,teamsize);}
-	public List<Stat> getTopXLosses(int x, int teamsize) {return getTopX(StatType.LOSSES,x,teamsize);}
-	public List<Stat> getTopXKDRatio(int x, int teamsize) {return getTopX(StatType.KDRATIO,x,teamsize);}
+	public List<Stat> getTopXRanking(int x, Integer teamsize) {return getTopX(StatType.RANKING,x,teamsize);}
+	public List<Stat> getTopXMaxRanking(int x, Integer teamsize) {return getTopX(StatType.MAXRANKING,x,teamsize);}
+	public List<Stat> getTopXRating(int x, Integer teamsize) {return getTopX(StatType.RATING,x,teamsize);}
+	public List<Stat> getTopXMaxRating(int x, Integer teamsize) {return getTopX(StatType.MAXRATING,x,teamsize);}
+	public List<Stat> getTopXStreak(int x, Integer teamsize) {return getTopX(StatType.STREAK,x,teamsize);}
+	public List<Stat> getTopXMaxStreak(int x, Integer teamsize) {return getTopX(StatType.MAXSTREAK,x,teamsize);}
+	public List<Stat> getTopXWins(int x, Integer teamsize) {return getTopX(StatType.WINS,x,teamsize);}
+	public List<Stat> getTopXLosses(int x, Integer teamsize) {return getTopX(StatType.LOSSES,x,teamsize);}
+	public List<Stat> getTopXKDRatio(int x, Integer teamsize) {return getTopX(StatType.KDRATIO,x,teamsize);}
 
 
-	public List<Stat> getTopX(StatType statType, int x, int teamsize) {
+	public List<Stat> getTopX(StatType statType, int x, Integer teamsize) {
 		cache.save();
-		switch(statType){
-		case WINS: case KILLS: return sql.getTopXWins(x,teamsize);
-		case LOSSES: case DEATHS: return sql.getTopXLosses(x,teamsize);
-		case TIES: return sql.getTopXTies(x,teamsize);
-		case RANKING: return sql.getTopXRating(x,teamsize);
-		case MAXRANKING: return sql.getTopXMaxRating(x,teamsize);
-		case RATING: return sql.getTopXRating(x,teamsize);
-		case MAXRATING: return sql.getTopXMaxRating(x,teamsize);
-		case STREAK: return sql.getTopXStreak(x,teamsize);
-		case MAXSTREAK: return sql.getTopXMaxStreak(x,teamsize);
-		case WLRATIO: case KDRATIO: return sql.getTopXRatio(x,teamsize);
-		}
-		return null;
+		return sql.getTopX(statType, x, teamsize);
 	}
 
 
@@ -353,19 +353,28 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		trackIndividual = !b;
 	}
 
-	public RankingCalculator getRankingCalculator() {
+	public RatingCalculator getRatingCalculator() {
+		return rc;
+	}
+
+	public RatingCalculator getRankingCalculator() {
 		return rc;
 	}
 
 	public SQLInstance getSQL() {
 		return sql;
 	}
-	public boolean setRanking(OfflinePlayer player, int ranking) {
+
+	public boolean setRating(OfflinePlayer player, int rating){
 		Stat stat = cache.get(new PlayerStat(player));
 		if (stat == null)
 			return false;
-		stat.setRating(ranking);
+		stat.setRating(rating);
 		return true;
+
+	}
+	public boolean setRanking(OfflinePlayer player, int ranking) {
+		return setRating(player,ranking);
 	}
 
 	public String getInterfaceName() {
@@ -385,6 +394,18 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		cache.save();
 		return sql.getWinsSince(stat.getName(),time);
 	}
+
+
+	public void printTopX(CommandSender sender, StatType statType, int x){
+		final String headerMsg = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
+		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]";
+		printTopX(sender,statType,x,null, headerMsg, bodyMsg);
+	}
+
+	public void printTopX(CommandSender sender, StatType statType, int x, String headerMsg, String bodyMsg){
+		printTopX(sender,statType,x,null, headerMsg, bodyMsg);
+	}
+
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize){
 		final String headerMsg = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
 		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]";
@@ -392,6 +413,10 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	}
 
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize, String headerMsg, String bodyMsg){
+		printTopX(sender,statType,x,new Integer(teamSize), headerMsg, bodyMsg);
+	}
+
+	private void printTopX(CommandSender sender, StatType statType, int x, Integer teamSize, String headerMsg, String bodyMsg){
 		if (x <= 0 ){
 			x = Integer.MAX_VALUE;}
 		cache.save();
@@ -444,7 +469,6 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		}
 
 	}
-
 	@Override
 	public int getRecordCount() {
 		return sql.getRecordCount();
@@ -472,7 +496,5 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 			return null;
 		return sql.getRanking(s.getRating(),s.getCount());
 	}
-
-
 
 }

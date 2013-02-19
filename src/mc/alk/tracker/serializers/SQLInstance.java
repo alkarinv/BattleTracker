@@ -13,16 +13,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import mc.alk.serializers.SQLSerializer;
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
+import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.VersusRecords;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
+import mc.alk.util.Log;
 
-import com.alk.serializers.SQLSerializer;
-import com.alk.util.Log;
 
 public class SQLInstance extends SQLSerializer{
 
@@ -76,6 +77,9 @@ public class SQLInstance extends SQLSerializer{
 	String get_topx_wins, get_topx_losses, get_topx_ties;
 	String get_topx_streak,get_topx_maxstreak;
 	String get_topx_kd, get_topx_elo, get_topx_maxelo;
+	String get_topx_wins_tc, get_topx_losses_tc, get_topx_ties_tc;
+	String get_topx_streak_tc,get_topx_maxstreak_tc;
+	String get_topx_kd_tc, get_topx_elo_tc, get_topx_maxelo_tc;
 	String save_ind_record, get_ind_record;
 	String insert_versus_record, get_versus_record;
 	String get_versus_records, getx_versus_records, get_wins_since;
@@ -129,15 +133,23 @@ public class SQLInstance extends SQLSerializer{
 				NAME + " VARCHAR(" + MAX_NAME_LENGTH +") NOT NULL ," +
 				"PRIMARY KEY (" + TEAMID +","+NAME+"))";
 
+		get_topx_wins = "select * from "+OVERALL_TABLE +" ORDER BY "+WINS+" DESC LIMIT ?";
+		get_topx_losses = "select * from "+OVERALL_TABLE +" ORDER BY "+LOSSES+" DESC LIMIT ? ";
+		get_topx_losses = "select * from "+OVERALL_TABLE +" ORDER BY "+TIES+" DESC LIMIT ? ";
+		get_topx_streak = "select * from "+OVERALL_TABLE +" ORDER BY "+STREAK +" DESC LIMIT ?";
+		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
+		get_topx_elo = "select * from "+OVERALL_TABLE +" ORDER BY "+ELO+" DESC LIMIT ?";
+		get_topx_maxelo = "select * from "+OVERALL_TABLE +" ORDER BY "+MAXELO+" DESC LIMIT ?";
+		get_topx_kd = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" ORDER BY KD DESC LIMIT ?";
 
-		get_topx_wins = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+WINS+" DESC LIMIT ?";
-		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+LOSSES+" DESC LIMIT ? ";
-		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+TIES+" DESC LIMIT ? ";
-		get_topx_streak = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+STREAK +" DESC LIMIT ?";
-		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
-		get_topx_elo = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+ELO+" DESC LIMIT ?";
-		get_topx_maxelo = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXELO+" DESC LIMIT ?";
-		get_topx_kd = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY KD DESC LIMIT ?";
+		get_topx_wins_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+WINS+" DESC LIMIT ?";
+		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+LOSSES+" DESC LIMIT ? ";
+		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+TIES+" DESC LIMIT ? ";
+		get_topx_streak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+STREAK +" DESC LIMIT ?";
+		get_topx_maxstreak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
+		get_topx_elo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+ELO+" DESC LIMIT ?";
+		get_topx_maxelo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXELO+" DESC LIMIT ?";
+		get_topx_kd_tc = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY KD DESC LIMIT ?";
 
 		get_overall_totals = "select * from " + OVERALL_TABLE + " where " + TEAMID +" = ?";
 
@@ -219,55 +231,44 @@ public class SQLInstance extends SQLSerializer{
 		return true;
 	}
 
-	public List<Stat> getTopXWins(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
 
-		RSCon rscon = executeQuery(get_topx_wins,teamcount,x);
-		return createStatList(rscon);
-	}
-	public List<Stat> getTopXLosses(int x, int teamcount) {
+	public List<Stat> getTopX(StatType statType, int x, Integer teamcount) {
 		if (x <= 0){
 			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_losses,teamcount,x);
-		return createStatList(rscon);
-	}
-	public List<Stat> getTopXTies(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_ties,teamcount,x);
-		return createStatList(rscon);
-	}
-	public List<Stat> getTopXStreak(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_streak,teamcount,x);
-		return createStatList(rscon);
-	}
-	public List<Stat> getTopXMaxStreak(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_maxstreak,teamcount,x);
-		return createStatList(rscon);
+		RSCon rscon = null;
+
+		if (teamcount == null){
+			switch(statType){
+			case WINS: case KILLS: rscon = executeQuery(get_topx_wins,x);break;
+			case LOSSES: case DEATHS: rscon = executeQuery(get_topx_losses,x); break;
+			case TIES: rscon = executeQuery(get_topx_ties,x); break;
+			case RATING: case RANKING: rscon = executeQuery(get_topx_elo,x); break;
+			case MAXRATING: case MAXRANKING: rscon = executeQuery(get_topx_maxelo,x); break;
+			case STREAK: rscon = executeQuery(get_topx_streak,x); break;
+			case MAXSTREAK: rscon = executeQuery(get_topx_maxstreak,x); break;
+			case WLRATIO: rscon = executeQuery(get_topx_kd,x); break;
+			default:
+			}
+		} else {
+			switch(statType){
+			case WINS: case KILLS: rscon = executeQuery(get_topx_wins_tc,teamcount,x);break;
+			case LOSSES: case DEATHS: rscon = executeQuery(get_topx_losses_tc,teamcount,x); break;
+			case TIES: rscon = executeQuery(get_topx_ties_tc,teamcount,x); break;
+			case RATING: case RANKING: rscon = executeQuery(get_topx_elo_tc,teamcount,x); break;
+			case MAXRATING: case MAXRANKING: rscon = executeQuery(get_topx_maxelo_tc,teamcount,x); break;
+			case STREAK: rscon = executeQuery(get_topx_streak_tc,teamcount,x); break;
+			case MAXSTREAK: rscon = executeQuery(get_topx_maxstreak_tc,teamcount,x); break;
+			case WLRATIO: rscon = executeQuery(get_topx_kd_tc,teamcount,x); break;
+			default:
+			}
+		}
+
+		return rscon == null ? null : createStatList(rscon);
 	}
 
-	public List<Stat> getTopXRating(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_elo,teamcount,x);
-		return createStatList(rscon);
-	}
-	public List<Stat> getTopXMaxRating(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_maxelo,teamcount,x);
-		return createStatList(rscon);
-	}
-	public List<Stat> getTopXRatio(int x, int teamcount) {
-		if (x <= 0){
-			x = Integer.MAX_VALUE;}
-		RSCon rscon = executeQuery(get_topx_kd,teamcount,x);
-		return createStatList(rscon);
+	public Integer getRanking(int rating, int teamSize) {
+		Integer rank = getInteger(get_rank, rating, teamSize);
+		return rank != null ? rank + 1: null;
 	}
 
 	private List<Stat> createStatList(RSCon rscon){
@@ -560,8 +561,4 @@ public class SQLInstance extends SQLSerializer{
 		return getInteger("select count(*) from " + INDIVIDUAL_TABLE);
 	}
 
-	public Integer getRanking(int rating, int teamSize) {
-		Integer rank = getInteger(get_rank, rating, teamSize);
-		return rank != null ? rank + 1: null;
-	}
 }

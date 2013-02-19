@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import mc.alk.tracker.objects.Stat;
 
-public class EloCalculator implements RankingCalculator {
+public class EloCalculator implements RatingCalculator {
 	public static final float MIN_ELO = 100;
 	public static final float DEFAULT_ELO = 1250;
 
@@ -35,11 +35,14 @@ public class EloCalculator implements RankingCalculator {
 
 	public void changeRatings(Stat ts1, Collection<Stat> teamstats, boolean tie) {
 		float result = tie ? 0.5f : 1.0f;
+		double eloWinner = 0;
+		double dampening = teamstats.size() == 1 ? 1 : teamstats.size() / 2.0D;
 		for (Stat ts : teamstats){
-			final double eloChange = eloChange(ts1,ts,result) / teamstats.size();
-			ts1.setRating((int) (ts1.getRating() + eloChange));
+			final double eloChange = eloChange(ts1,ts,result) / dampening;
+			eloWinner+= eloChange;
 			ts.setRating((int) (ts.getRating() - eloChange));
 		}
+		ts1.setRating((int) (ts1.getRating() + eloWinner));
 	}
 
 

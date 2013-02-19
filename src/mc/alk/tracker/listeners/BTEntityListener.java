@@ -1,11 +1,13 @@
 package mc.alk.tracker.listeners;
 
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
+import mc.alk.tracker.TrackerOptions;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.TrackerController;
@@ -14,6 +16,7 @@ import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -31,7 +34,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 
 public class BTEntityListener implements Listener{
-	//	private static final int DAMAGE_TIMEOUT = 60000;
 	static JavaPlugin plugin;
 	static final String UNKNOWN = "unknown";
 	ConcurrentHashMap<String,Long> lastDamageTime = new ConcurrentHashMap<String,Long>();
@@ -47,7 +49,9 @@ public class BTEntityListener implements Listener{
 	}
 
 	public BTEntityListener(){
-		playerTi = Tracker.getInterface(Defaults.PVP_INTERFACE);
+		TrackerOptions to = new TrackerOptions();
+		to.setSaveIndividualRecords(true);
+		playerTi = Tracker.getInterface(Defaults.PVP_INTERFACE,to);
 		worldTi = Tracker.getInterface(Defaults.PVE_INTERFACE);
 		plugin = Tracker.getSelf();
 	}
@@ -132,7 +136,6 @@ public class BTEntityListener implements Listener{
 			else
 				killer = lastDamageCause.getCause().name();
 		}
-
 		if (killerPlayer && TrackerController.dontTrack(killer))
 			return;
 
@@ -140,20 +143,20 @@ public class BTEntityListener implements Listener{
 		if (targetPlayer && killerPlayer){
 			/// Check to see if we add the records
 			if (ConfigController.getBoolean("trackPvP",true))
-				addRecord(playerTi,killer,target,WLT.WIN,true);
+				addRecord(playerTi,killer,target,WLT.WIN);
 			/// Check to see if an admin has disabled death messages
 			PlayerDeathEvent pde = (PlayerDeathEvent) event;
 			if (Defaults.DISABLE_PVP_MESSAGES){
-				pde.setDeathMessage(null);
+				sendMessage(pde,null);
 				return;
 			}
 			/// Check sending messages
 			if (ConfigController.getBoolean("sendPVPDeathMessages",true)){
 				//				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
 				String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,killingWeapon);
-				pde.setDeathMessage(msg);
+				sendMessage(pde,msg);
 			} else if (!ConfigController.getBoolean("showBukkitPVPMessages",false)){
-				pde.setDeathMessage(null);
+				sendMessage(pde,null);
 			}
 		} else if (!targetPlayer && !killerPlayer){ /// mobs killing each other, or dying by traps
 			/// Do nothing
@@ -165,7 +168,7 @@ public class BTEntityListener implements Listener{
 				target = target.substring(5);}
 			/// Should we track the kills?
 			if (ConfigController.getBoolean("trackPvE",true)){
-				addRecord(worldTi, killer,target,WLT.WIN, false);}
+				addRecord(worldTi, killer,target,WLT.WIN);}
 
 			/// Check message sending
 			if (targetPlayer && event instanceof PlayerDeathEvent){
@@ -179,14 +182,39 @@ public class BTEntityListener implements Listener{
 				if (ConfigController.getBoolean("sendPVEDeathMessages",true)){
 					final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
 					String msg = getPvEDeathMessage(killer,target,isMelee,worldTi,wpn);
-					pde.setDeathMessage(msg);
+					sendMessage(pde,msg);
 				} else if (!ConfigController.getBoolean("showBukkitPVEMessages",false)){
-					pde.setDeathMessage(null);
+					sendMessage(pde,null);
 				}
 			}
 		}
 	}
+	private void sendMessage(PlayerDeathEvent event, String msg){
+		if (Defaults.RADIUS <= 0){
+			event.setDeathMessage(msg);
+			return;
+		} else {
+			Player player = event.getEntity();
+			if (player == null){
+				event.setDeathMessage(msg);
+				return;
+			}
+			Location l = player.getLocation();
+			if (l==null){
+				event.setDeathMessage(msg);
+				return;
+			}
+			event.setDeathMessage(null);
+			UUID wid = l.getWorld().getUID();
+			Player players[] = Bukkit.getOnlinePlayers();
 
+			for (Player p: players){
+				if (wid != p.getLocation().getWorld().getUID()  || p.getLocation().distanceSquared(l) >= Defaults.RADIUS){
+					continue;}
+				p.sendMessage(msg);
+			}
+		}
+	}
 	public String getPvPDeathMessage(String killer, String target, boolean isMeleeDeath,
 			TrackerInterface ti, ItemStack killingWeapon){
 		/// Check for a rampage
@@ -222,12 +250,11 @@ public class BTEntityListener implements Listener{
 		return MessageController.getPvEMessage(isMeleeDeath, p1, p2,killingWeapon);
 	}
 
-	public static void addRecord(final TrackerInterface ti,final String e1, final String e2,
-			final WLT record, final boolean saveIndividualRecord){
+	public static void addRecord(final TrackerInterface ti,final String e1, final String e2, final WLT record){
 		Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable(){
 			@Override
 			public void run() {
-				ti.addPlayerRecord(e1, e2, record, saveIndividualRecord);
+				ti.addPlayerRecord(e1, e2, record);
 			}
 		});
 	}

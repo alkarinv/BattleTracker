@@ -13,9 +13,9 @@ import org.apache.commons.lang.mutable.MutableBoolean;
 
 /**
  * Author: alkarin
- * 
+ *
  * A Cache class that allows quick access to stored objects
- * This will also store if the value is NOT found. 
+ * This will also store if the value is NOT found.
  * @param <Key>
  * @param <Value>
  */
@@ -37,7 +37,7 @@ public class Cache <Key, Value> {
 	}
 
 	/**
-	 * All cache classes must be able to return a Unique Key, (not necessarily just an int ala hashCode() ) 
+	 * All cache classes must be able to return a Unique Key, (not necessarily just an int ala hashCode() )
 	 * @param <K>
 	 */
 	public interface UniqueKey<K> {
@@ -45,7 +45,7 @@ public class Cache <Key, Value> {
 	}
 
 	/**
-	 * Interface for the class that will Save and Load the objects in the cache 
+	 * Interface for the class that will Save and Load the objects in the cache
 	 *
 	 * @param <K> Key Object
 	 * @param <T> Value Object
@@ -56,7 +56,7 @@ public class Cache <Key, Value> {
 	}
 
 	/**
-	 * A cache element along with when it was used 
+	 * A cache element along with when it was used
 	 */
 	public class CacheElement{
 		public UniqueKey<Key> v;
@@ -95,7 +95,7 @@ public class Cache <Key, Value> {
 
 	@SuppressWarnings("unchecked")
 	/**
-	 * get a key.  if varArgs is not null these values will be passed to the serializer in the case that the 
+	 * get a key.  if varArgs is not null these values will be passed to the serializer in the case that the
 	 * cache object does not exist for loading.
 	 * @param key cache key
 	 * @param varArgs arguments that will be passed to serializer when a key is not found
@@ -112,7 +112,7 @@ public class Cache <Key, Value> {
 			if (DEBUG) System.out.println("  - loaded element  = " + t + " ");
 			o = new CacheElement(t);
 			synchronized(map){
-				map.put(key, o);	
+				map.put(key, o);
 			}
 			if (DEBUG) System.out.println("  - adding key = " + key + " contains=" + map.containsKey(key) +"  dirty="+isdirty);
 			if (isdirty.booleanValue()){ /// If its dirty, add to our dirty set
@@ -153,7 +153,7 @@ public class Cache <Key, Value> {
 	}
 
 	/**
-	 * get a cache object using the key from the given param.  
+	 * get a cache object using the key from the given param.
 	 * @param type
 	 * @param varArgs
 	 * @return
@@ -208,7 +208,7 @@ public class Cache <Key, Value> {
 				if (DEBUG) System.out.println(" - setting dirty key = " + key + " v=" + map.get(key));
 				dirty.add(key);
 			}
-		}			
+		}
 		if (autoFlush && autoFlushTime != null){
 			flushOld(autoFlushTime);}
 
@@ -222,7 +222,7 @@ public class Cache <Key, Value> {
 			for (UniqueKey<Key> t: types){
 				if (map.containsKey(t.getKey()))
 					dirty.add(t.getKey());
-			}			
+			}
 		}
 	}
 
@@ -230,7 +230,7 @@ public class Cache <Key, Value> {
 		synchronized(dirty){
 			for (UniqueKey<Key> t: types){
 				dirty.remove(t.getKey());
-			}			
+			}
 		}
 	}
 
@@ -243,7 +243,7 @@ public class Cache <Key, Value> {
 		List<UniqueKey<Key>> types = new ArrayList<UniqueKey<Key>>(1);
 		types.add(element);
 		synchronized(dirty){
-			dirty.remove(element.getKey());			
+			dirty.remove(element.getKey());
 		}
 		serializer.save(types);
 	}
@@ -257,7 +257,7 @@ public class Cache <Key, Value> {
 			types.add(map.get(key).v);
 		}
 		synchronized(dirty){
-			dirty.remove(key);			
+			dirty.remove(key);
 		}
 		serializer.save(types);
 	}
@@ -295,7 +295,7 @@ public class Cache <Key, Value> {
 	public void flush() {
 		save();
 		synchronized(dirty){ synchronized(map){
-			map.clear(); 
+			map.clear();
 			dirty.clear();
 		}}
 	}
@@ -331,6 +331,6 @@ public class Cache <Key, Value> {
 		synchronized(dirty){ synchronized(map){
 			map.clear();
 			dirty.clear();
-		}}		
+		}}
 	}
 }

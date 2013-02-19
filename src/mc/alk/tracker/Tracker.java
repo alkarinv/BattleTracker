@@ -2,6 +2,8 @@ package mc.alk.tracker;
 
 import java.util.HashMap;
 
+import mc.alk.battleCore.MCPlugin;
+import mc.alk.battleCore.Version;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.TrackerController;
@@ -11,10 +13,7 @@ import mc.alk.tracker.executors.BattleTrackerExecutor;
 import mc.alk.tracker.executors.TrackerExecutor;
 import mc.alk.tracker.listeners.BTEntityListener;
 import mc.alk.tracker.listeners.BTPluginListener;
-import mc.alk.tracker.ranking.RankingCalculator;
 
-import com.alk.battleCore.MCPlugin;
-import com.alk.battleCore.Version;
 
 public class Tracker extends MCPlugin{
 	static Tracker plugin;
@@ -31,8 +30,8 @@ public class Tracker extends MCPlugin{
 		getServer().getPluginManager().registerEvents(new BTPluginListener(), this);
 
 		getCommand("battleTracker").setExecutor(new BattleTrackerExecutor());
-		getCommand("pvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
-		getCommand("pve").setExecutor(new TrackerExecutor(getInterface(Defaults.PVE_INTERFACE)));
+		getCommand("btpvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
+		getCommand("btpve").setExecutor(new TrackerExecutor(getInterface(Defaults.PVE_INTERFACE)));
 
 		BTPluginListener.loadPlugins();
 	}
@@ -59,19 +58,23 @@ public class Tracker extends MCPlugin{
 		}
 	}
 
-	public static TrackerInterface getInterface(String interfaceName){
-		return getInterface(interfaceName,null);
+	public static TrackerInterface getPVPInterface(){
+		return getInterface(Defaults.PVP_INTERFACE,new TrackerOptions());
 	}
 
-	public static TrackerInterface getInterface(String interfaceName, RankingCalculator rankingCalculator){
+	public static TrackerInterface getPVEInterface(){
+		return getInterface(Defaults.PVE_INTERFACE,new TrackerOptions());
+	}
+
+	public static TrackerInterface getInterface(String interfaceName){
+		return getInterface(interfaceName,new TrackerOptions());
+	}
+
+	public static TrackerInterface getInterface(String interfaceName, TrackerOptions trackerOptions){
 		try {
 			String iname = interfaceName.toLowerCase();
 			if (!interfaces.containsKey(iname)){
-				if (rankingCalculator == null)
-					interfaces.put(iname, new TrackerImpl(interfaceName));
-				else
-					interfaces.put(iname, new TrackerImpl(interfaceName,rankingCalculator));
-			}
+				interfaces.put(iname, new TrackerImpl(interfaceName,trackerOptions));}
 			return interfaces.get(iname);
 		} catch (DBConnectionException e) {
 			e.printStackTrace();
@@ -81,5 +84,10 @@ public class Tracker extends MCPlugin{
 	public static Version getVersionObject(){
 		String strv = getSelf().getDescription().getVersion();
 		return new Version(strv);
+	}
+
+	public static boolean hasInterface(String interfaceName) {
+		String iname = interfaceName.toLowerCase();
+		return interfaces.containsKey(iname);
 	}
 }

@@ -5,7 +5,9 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Random;
 
+import mc.alk.controllers.MC;
 import mc.alk.tracker.objects.SpecialType;
+import mc.alk.util.InventoryUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
@@ -13,8 +15,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.alk.controllers.MC;
-import com.alk.util.InventoryUtil;
 import com.dthielke.herochat.Herochat;
 
 /**

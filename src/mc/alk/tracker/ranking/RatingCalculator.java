@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import mc.alk.tracker.objects.Stat;
 
-public interface RankingCalculator {
+public interface RatingCalculator {
 
 	/**
 	 * What is this rating called

@@ -14,4 +14,6 @@ public class Defaults {
 
 	public final static boolean DEBUG = false;
 	public static boolean DEBUG_ADD_RECORDS = false;
+
+	public static int RADIUS = -1;
 }

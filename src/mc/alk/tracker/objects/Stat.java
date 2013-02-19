@@ -7,14 +7,15 @@ import java.util.List;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.events.MaxRatingChangeEvent;
+import mc.alk.tracker.events.WinStatChangeEvent;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.ranking.EloCalculator;
 import mc.alk.tracker.util.Cache.CacheObject;
 import mc.alk.tracker.util.Util;
+import mc.alk.util.Log;
 
 import org.bukkit.entity.Player;
 
-import com.alk.util.Log;
 
 public abstract class Stat extends CacheObject<String,Stat>{
 	protected String strid = null;
@@ -107,7 +108,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 			maxRating = this.rating;
 			if (maxRating < threshold && this.rating >= threshold){
 				maxRating = this.rating;
-				new MaxRatingChangeEvent(this,oldRating).callSyncEvent();
+				new MaxRatingChangeEvent(parent,this,oldRating).callSyncEvent();
 			}
 		}
 		setDirty();
@@ -142,6 +143,7 @@ public abstract class Stat extends CacheObject<String,Stat>{
 		if (streak > maxStreak){
 			maxStreak=streak;}
 		getRecord().addWin(ts.getStrID());
+		new WinStatChangeEvent(parent,this,ts).callSyncEvent();
 		setDirty();
 	}
 
