@@ -51,7 +51,12 @@ public class MessageController {
 		MessageController.f = f;
 		return load();
 	}
-
+	public static YamlConfiguration getConfig(){
+		return config;
+	}
+	public static File getFile(){
+		return f;
+	}
 	public static String getMsg(String node, Object... varArgs) {
 		return getMsg(TRACKER_PREFIX,"messages."+node,varArgs);
 	}

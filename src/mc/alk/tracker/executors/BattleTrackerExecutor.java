@@ -49,7 +49,7 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		}
 	}
 
-	@MCCommand(cmds={"spawn"},op=true, inGame=true,usage="addkill <player1> <player2>: this is a debugging method")
+	@MCCommand(cmds={"spawn"},op=true, usage="addkill <player1> <player2>: this is a debugging method")
 	public boolean spawn(Player sender, Integer n){
 		World w = Bukkit.getWorld("world");
 		for (int i=0;i<n;i++){
@@ -74,17 +74,26 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, "&2Configs reloaded for BattleTracker");
 	}
 
+	@MCCommand(cmds={"hide"},perm="tracker.admin")
+	public boolean hide(CommandSender sender, String db, OfflinePlayer player, Boolean hide){
+		if (!Tracker.hasInterface(db))
+			return sendMessage(sender,"&cDatabase "+db +" does not exist");
+		TrackerInterface ti = Tracker.getInterface(db);
+		ti.hidePlayer(player.getName(), hide);
+		return sendMessage(sender, "&2Player &6" + player.getName() +"&2 hiding="+hide);
+	}
+
 	@MCCommand(cmds={"top"})
 	public boolean top(CommandSender sender, String db){
 		if (!Tracker.hasInterface(db))
-			return sendMessage(sender,"&c"+db +" does not exist");
+			return sendMessage(sender,"&cDatabase "+db +" does not exist");
 		TrackerInterface ti = Tracker.getInterface(db);
 		ti.printTopX(sender, StatType.RATING, 10);
 		return true;
 	}
 
 	@MCCommand(cmds={"top"}, order=2)
-	public boolean top(CommandSender sender, String db, Integer x){
+	public boolean top(CommandSender sender, String db, int x){
 		if (!Tracker.hasInterface(db))
 			return sendMessage(sender,"&c"+db +" does not exist");
 		TrackerInterface ti = Tracker.getInterface(db);

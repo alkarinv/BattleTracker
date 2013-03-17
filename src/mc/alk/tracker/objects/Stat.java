@@ -25,6 +25,8 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	protected int wins = 0, losses= 0, ties = 0;
 	protected int streak = 0, maxStreak =0;
 	protected int count = 1; /// How many members are in the team
+	boolean hide = false;
+
 	List<String> members ;
 
 	VersusRecords vRecord = null;
@@ -235,4 +237,22 @@ public abstract class Stat extends CacheObject<String,Stat>{
 			vRecord.setSaveIndividual(saveIndividualRecord);
 	}
 
+	public int getFlags() {
+		return hide ? 1 : 0;
+	}
+
+	public void setFlags(int flags) {
+		hide = (flags == 0 ? false : true);
+	}
+
+	public boolean isHidden(){
+		return hide;
+	}
+
+	public void hide(boolean hide) {
+		if (this.hide != hide){
+			setDirty();
+			this.hide = hide;
+		}
+	}
 }

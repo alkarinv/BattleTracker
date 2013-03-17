@@ -6,6 +6,7 @@ import mc.alk.battleCore.MCPlugin;
 import mc.alk.battleCore.Version;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
+import mc.alk.tracker.controllers.SignController;
 import mc.alk.tracker.controllers.TrackerController;
 import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.controllers.TrackerImpl.DBConnectionException;
@@ -13,12 +14,17 @@ import mc.alk.tracker.executors.BattleTrackerExecutor;
 import mc.alk.tracker.executors.TrackerExecutor;
 import mc.alk.tracker.listeners.BTEntityListener;
 import mc.alk.tracker.listeners.BTPluginListener;
+import mc.alk.tracker.serializers.SignSerializer;
+import mc.alk.tracker.serializers.YamlConfigUpdater;
+import mc.alk.tracker.serializers.YamlMessageUpdater;
 
 
 public class Tracker extends MCPlugin{
 	static Tracker plugin;
 	TrackerController sc;
 	static HashMap<String, TrackerInterface> interfaces = new HashMap<String,TrackerInterface>();
+	SignController signController = new SignController();
+	SignSerializer signSerializer;
 
 	@Override
 	public void onEnable() {
@@ -38,24 +44,40 @@ public class Tracker extends MCPlugin{
 
 	@Override
 	public void onDisable(){
-		saveStats();
+		saveConfigs();
 	}
 
 	public void loadConfigs(){
+		/// Load
 		ConfigController.setConfig(load("/default_files/config.yml",getDataFolder().getPath() +"/config.yml"));
 		MessageController.setConfig(load("/default_files/messages.yml",getDataFolder().getPath() +"/messages.yml"));
+		signSerializer = new SignSerializer(signController);
+		signSerializer.setConfig(getDataFolder().getPath()+"/signs.yml");
+		signSerializer.loadAll();
+
+		/// Update
+		YamlConfigUpdater cu = new YamlConfigUpdater();
+		cu.update(ConfigController.getConfig(), ConfigController.getFile());
+
+		YamlMessageUpdater mu = new YamlMessageUpdater();
+		mu.update(MessageController.getConfig(), MessageController.getFile());
+
+		/// Reload
+		ConfigController.setConfig(ConfigController.getFile());
+		MessageController.setConfig(MessageController.getFile());
 	}
 
 	public static Tracker getSelf() {
 		return plugin;
 	}
 
-	private void saveStats() {
+	private void saveConfigs() {
 		synchronized(interfaces){
 			for (TrackerInterface ti: interfaces.values()){
 				ti.flush();
 			}
 		}
+		signSerializer.saveAll();
 	}
 
 	public static TrackerInterface getPVPInterface(){

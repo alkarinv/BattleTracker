@@ -1,5 +1,7 @@
 package mc.alk.tracker.listeners;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +40,8 @@ public class BTEntityListener implements Listener{
 	static final String UNKNOWN = "unknown";
 	ConcurrentHashMap<String,Long> lastDamageTime = new ConcurrentHashMap<String,Long>();
 	ConcurrentHashMap<String,RampageStreak> lastKillTime = new ConcurrentHashMap<String,RampageStreak>();
+	static HashSet<String> ignoreEntities = new HashSet<String>();
+
 	Random r = new Random();
 	TrackerInterface playerTi;
 	TrackerInterface worldTi;
@@ -138,6 +142,8 @@ public class BTEntityListener implements Listener{
 		}
 		if (killerPlayer && TrackerController.dontTrack(killer))
 			return;
+		if (ignoreEntities.contains(killer) || ignoreEntities.contains(targetEntity))
+			return;
 
 		/// Decide what to do
 		if (targetPlayer && killerPlayer){
@@ -215,6 +221,7 @@ public class BTEntityListener implements Listener{
 			}
 		}
 	}
+
 	public String getPvPDeathMessage(String killer, String target, boolean isMeleeDeath,
 			TrackerInterface ti, ItemStack killingWeapon){
 		/// Check for a rampage
@@ -251,11 +258,12 @@ public class BTEntityListener implements Listener{
 	}
 
 	public static void addRecord(final TrackerInterface ti,final String e1, final String e2, final WLT record){
-		Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable(){
-			@Override
-			public void run() {
-				ti.addPlayerRecord(e1, e2, record);
-			}
-		});
+		ti.addPlayerRecord(e1, e2, record);
+	}
+
+	public static void setIgnoreEntities(List<String> list) {
+		ignoreEntities.clear();
+		if (list != null)
+			ignoreEntities.addAll(list);
 	}
 }

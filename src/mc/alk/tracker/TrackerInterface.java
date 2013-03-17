@@ -43,6 +43,8 @@ public interface TrackerInterface{
 	public TeamStat getTeamRecord(String teamName);
 	public TeamStat getTeamRecord(Set<String> players);
 
+	public boolean hidePlayer(String player, boolean hide);
+
 	/**
 	 * Stop tracking stats and don't display kill messages for this player
 	 * @param playerName

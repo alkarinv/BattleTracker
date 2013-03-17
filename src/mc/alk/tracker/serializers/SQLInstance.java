@@ -67,6 +67,7 @@ public class SQLInstance extends SQLSerializer{
 	static final public String TX_ELO = "ELO";
 	static final public String VALUE = "Value";
 	static final public String MEMBERS = "Members";
+	static final public String FLAGS = "Flags";
 
 	String drop_tables;
 
@@ -118,6 +119,7 @@ public class SQLInstance extends SQLSerializer{
 				ELO + " INTEGER UNSIGNED DEFAULT " + 1250+"," +
 				MAXELO + " INTEGER UNSIGNED DEFAULT " + 1250+"," +
 				COUNT + " INTEGER UNSIGNED DEFAULT 1," +
+				FLAGS + " INTEGER UNSIGNED DEFAULT 0," +
 				"PRIMARY KEY (" + TEAMID +")) ";
 
 		create_versus_table = "CREATE TABLE IF NOT EXISTS " + VERSUS_TABLE +" ("+
@@ -133,23 +135,23 @@ public class SQLInstance extends SQLSerializer{
 				NAME + " VARCHAR(" + MAX_NAME_LENGTH +") NOT NULL ," +
 				"PRIMARY KEY (" + TEAMID +","+NAME+"))";
 
-		get_topx_wins = "select * from "+OVERALL_TABLE +" ORDER BY "+WINS+" DESC LIMIT ?";
-		get_topx_losses = "select * from "+OVERALL_TABLE +" ORDER BY "+LOSSES+" DESC LIMIT ? ";
-		get_topx_losses = "select * from "+OVERALL_TABLE +" ORDER BY "+TIES+" DESC LIMIT ? ";
-		get_topx_streak = "select * from "+OVERALL_TABLE +" ORDER BY "+STREAK +" DESC LIMIT ?";
-		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
-		get_topx_elo = "select * from "+OVERALL_TABLE +" ORDER BY "+ELO+" DESC LIMIT ?";
-		get_topx_maxelo = "select * from "+OVERALL_TABLE +" ORDER BY "+MAXELO+" DESC LIMIT ?";
-		get_topx_kd = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" ORDER BY KD DESC LIMIT ?";
+		get_topx_wins = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+WINS+" DESC LIMIT ? ";
+		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+LOSSES+" DESC LIMIT ? ";
+		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+TIES+" DESC LIMIT ? ";
+		get_topx_streak = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+STREAK +" DESC LIMIT ? ";
+		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+MAXSTREAK +" DESC LIMIT ? ";
+		get_topx_elo = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+ELO+" DESC LIMIT ? ";
+		get_topx_maxelo = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+MAXELO+" DESC LIMIT ? ";
+		get_topx_kd = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY KD DESC LIMIT ? ";
 
-		get_topx_wins_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+WINS+" DESC LIMIT ?";
-		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+LOSSES+" DESC LIMIT ? ";
-		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+TIES+" DESC LIMIT ? ";
-		get_topx_streak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+STREAK +" DESC LIMIT ?";
-		get_topx_maxstreak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXSTREAK +" DESC LIMIT ?";
-		get_topx_elo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+ELO+" DESC LIMIT ?";
-		get_topx_maxelo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY "+MAXELO+" DESC LIMIT ?";
-		get_topx_kd_tc = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" WHERE "+COUNT+"=? ORDER BY KD DESC LIMIT ?";
+		get_topx_wins_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+WINS+" DESC LIMIT ? ";
+		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+LOSSES+" DESC LIMIT ? ";
+		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+TIES+" DESC LIMIT ? ";
+		get_topx_streak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+STREAK +" DESC LIMIT ? ";
+		get_topx_maxstreak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+MAXSTREAK +" DESC LIMIT ? ";
+		get_topx_elo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+ELO+" DESC LIMIT ? ";
+		get_topx_maxelo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+MAXELO+" DESC LIMIT ? ";
+		get_topx_kd_tc = "select *,(" + WINS + "/" + LOSSES+") as KD from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY KD DESC LIMIT ? ";
 
 		get_overall_totals = "select * from " + OVERALL_TABLE + " where " + TEAMID +" = ?";
 
@@ -176,11 +178,12 @@ public class SQLInstance extends SQLSerializer{
 			create_member_table_idx = "CREATE INDEX "+MEMBER_TABLE+"_idx ON " +MEMBER_TABLE+" ("+TEAMID+") USING HASH";
 			create_versus_table_idx = "CREATE INDEX "+VERSUS_TABLE+"_idx ON " +VERSUS_TABLE+" ("+ID1+") USING HASH";
 
-			insert_overall_totals = "INSERT INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?) " +
+			insert_overall_totals = "INSERT INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?,?) " +
 					"ON DUPLICATE KEY UPDATE " +
 					WINS + " = VALUES(" + WINS +"), " + LOSSES +"=VALUES(" + LOSSES + "), " + TIES +"=VALUES(" + TIES + "), " +
 					STREAK +"= VALUES(" + STREAK+")," +MAXSTREAK +"= VALUES(" + MAXSTREAK+")," +
-					ELO +"= VALUES(" + ELO + ")," +  MAXELO +"= VALUES(" + MAXELO+")";
+					ELO +"= VALUES(" + ELO + ")," +  MAXELO +"= VALUES(" + MAXELO+"),"+
+					FLAGS+"=VALUES("+FLAGS+")";
 
 			insert_versus_record = "insert into "+VERSUS_TABLE+" VALUES(?,?,?,?,?) " +
 					"ON DUPLICATE KEY UPDATE " +
@@ -198,14 +201,14 @@ public class SQLInstance extends SQLSerializer{
 					WLTIE + " INTEGER UNSIGNED," +
 					"PRIMARY KEY (" + ID1 +", " + ID2 + "," + DATE + ")) ";
 
-			create_member_table_idx = "CREATE UNIQUE INDEX "+MEMBER_TABLE+"_idx ON " +MEMBER_TABLE+" ("+TEAMID+")";
-			create_versus_table_idx = "CREATE UNIQUE INDEX "+VERSUS_TABLE+"_idx ON " +VERSUS_TABLE+" ("+ID1+")";
+			create_member_table_idx = "CREATE UNIQUE INDEX IF NOT EXISTS "+MEMBER_TABLE+"_idx ON " +MEMBER_TABLE+" ("+TEAMID+")";
+			create_versus_table_idx = "CREATE UNIQUE INDEX IF NOT EXISTS "+VERSUS_TABLE+"_idx ON " +VERSUS_TABLE+" ("+ID1+")";
 
 			insert_versus_record = "insert or replace into "+VERSUS_TABLE+" VALUES(?,?,?,?,?)";
 
 			save_ind_record = "insert or ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
 
-			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?) ";
+			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?,?) ";
 
 			//			insert_overall_totals = "INSERT OR REPLACE INTO "+OVERALL_TABLE+" VALUES (?," +
 			//					"(select "+NAME+" from "+OVERALL_TABLE+" where "+TEAMID+"=?),"+
@@ -214,7 +217,9 @@ public class SQLInstance extends SQLSerializer{
 
 			save_members = "insert or ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
 		}
-
+		if (shouldUpdateTo1point0()){
+			updateTo1Point0();
+		}
 		try {
 			Connection con = getConnection();  /// Our database connection
 
@@ -318,6 +323,7 @@ public class SQLInstance extends SQLSerializer{
 		int elo = rs.getInt(ELO);
 		int maxElo = rs.getInt(MAXELO);
 		int count = rs.getInt(COUNT);
+		int flags = rs.getInt(FLAGS);
 		if (DEBUG) System.out.println("name =" + name + " id=" + id +" ranking=" + elo +" count="+count);
 		if (count == 1){
 			ts = new PlayerStat(id);
@@ -347,7 +353,7 @@ public class SQLInstance extends SQLSerializer{
 		ts.setCount(count);
 		ts.setMaxStreak(maxStreak);
 		ts.setMaxRating(maxElo);
-
+		ts.setFlags(flags);
 		if (DEBUG) System.out.println("stat = " + ts);
 		return ts;
 	}
@@ -435,7 +441,8 @@ public class SQLInstance extends SQLSerializer{
 				Log.err("ELO OUT OF RANGE " + stat.getRating() +"   stat=" + stat);
 			}
 			batch.add(Arrays.asList(new Object[]{stat.getStrID(),name, stat.getWins(), stat.getLosses(),stat.getTies(),
-					stat.getStreak(),stat.getMaxStreak(), stat.getRating(),stat.getMaxRating(), stat.getCount()}));
+					stat.getStreak(),stat.getMaxStreak(), stat.getRating(),
+					stat.getMaxRating(), stat.getCount(), stat.getFlags()}));
 		}
 		try{
 			executeBatch(insert_overall_totals, batch);
@@ -560,5 +567,13 @@ public class SQLInstance extends SQLSerializer{
 	public int getRecordCount() {
 		return getInteger("select count(*) from " + INDIVIDUAL_TABLE);
 	}
+	public boolean shouldUpdateTo1point0() {
+		return hasTable(OVERALL_TABLE) && !hasColumn(OVERALL_TABLE,FLAGS);
+	}
 
+	private void updateTo1Point0() {
+		Log.warn("[BattleTracker] updating database to 1.0");
+		String alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+FLAGS+" INTEGER DEFAULT 0 ";
+		executeUpdate(alter);
+	}
 }

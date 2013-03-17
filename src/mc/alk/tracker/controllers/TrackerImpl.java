@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,7 +128,17 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		addStatRecord(team1,team2,wlt,true);
 	}
 
-	private void addStatRecord(Stat team1, Stat team2, WLT wlt, boolean changeWinLossRecords){
+	private void addStatRecord(final Stat team1, final Stat team2,
+			final WLT wlt, final boolean changeWinLossRecords){
+		new Timer().schedule(new TimerTask(){
+			@Override
+			public void run() {
+				_addStatRecord(team1,team2,wlt,changeWinLossRecords);
+			}
+		}, 0);
+	}
+
+	private void _addStatRecord(Stat team1, Stat team2, WLT wlt, boolean changeWinLossRecords){
 		/// Get our records
 		Stat ts1 = getRecord(team1);
 		Stat ts2 = getRecord(team2);
@@ -397,9 +409,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 
 
 	public void printTopX(CommandSender sender, StatType statType, int x){
-		final String headerMsg = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
-		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]";
-		printTopX(sender,statType,x,null, headerMsg, bodyMsg);
+		printTopX(sender,statType,x,null, Defaults.MSG_TOP_HEADER, Defaults.MSG_TOP_BODY);
 	}
 
 	public void printTopX(CommandSender sender, StatType statType, int x, String headerMsg, String bodyMsg){
@@ -407,9 +417,7 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 	}
 
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize){
-		final String headerMsg = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
-		final String bodyMsg ="&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]";
-		printTopX(sender,statType,x,teamSize, headerMsg, bodyMsg);
+		printTopX(sender,statType,x,teamSize, Defaults.MSG_TOP_HEADER, Defaults.MSG_TOP_BODY);
 	}
 
 	public void printTopX(CommandSender sender, StatType statType, int x, int teamSize, String headerMsg, String bodyMsg){
@@ -495,6 +503,16 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		if (s == null)
 			return null;
 		return sql.getRanking(s.getRating(),s.getCount());
+	}
+
+	@Override
+	public boolean hidePlayer(String player, boolean hide) {
+		Stat s = getPlayerRecord(player);
+		if (s==null)
+			return false;
+		s.hide(hide);
+		cache.flush();
+		return true;
 	}
 
 }

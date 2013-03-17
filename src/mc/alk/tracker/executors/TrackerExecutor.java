@@ -60,12 +60,12 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"versus","vs"}, inGame=true, usage="vs <player>")
+	@MCCommand(cmds={"versus","vs"}, usage="vs <player>")
 	public boolean versus(Player player1, String player2){
 		return versus(player1, player1.getName(), player2, 5);
 	}
 
-	@MCCommand(cmds={"versus","vs"}, inGame=true, usage="vs <player> <# records>")
+	@MCCommand(cmds={"versus","vs"}, usage="vs <player> <# records>")
 	public boolean versus(Player player1, String player2, Integer nRecords){
 		return versus(player1, player1.getName(), player2, nRecords);
 	}
@@ -137,7 +137,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		return sb.toString();
 	}
 
-	@MCCommand(inGame=true)
+	@MCCommand()
 	public boolean showStatsSelf(Player p) {
 		Stat stat = ti.loadRecord(p);
 		String msg = getFullStatMsg(stat);

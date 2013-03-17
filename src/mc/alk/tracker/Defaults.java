@@ -16,4 +16,10 @@ public class Defaults {
 	public static boolean DEBUG_ADD_RECORDS = false;
 
 	public static int RADIUS = -1;
+
+	/// Message Defaults
+
+	public static String MSG_TOP_HEADER = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
+	public static String MSG_TOP_BODY ="&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]";
+
 }

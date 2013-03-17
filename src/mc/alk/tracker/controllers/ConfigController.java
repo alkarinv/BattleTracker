@@ -3,6 +3,7 @@ package mc.alk.tracker.controllers;
 import java.io.File;
 
 import mc.alk.tracker.Defaults;
+import mc.alk.tracker.listeners.BTEntityListener;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 /**
@@ -11,7 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
  *
  */
 public class ConfigController {
-	static YamlConfiguration config;
+	static YamlConfiguration config = new YamlConfiguration();
 	static File f = null;
 
 	public static boolean getBoolean(String node) {return config.getBoolean(node, false);}
@@ -23,7 +24,6 @@ public class ConfigController {
 
 	public static void setConfig(File f){
 		ConfigController.f = f;
-		config = new YamlConfiguration();
 		loadAll();
 	}
 
@@ -34,5 +34,14 @@ public class ConfigController {
 		Defaults.DISABLE_PVE_MESSAGES = !config.getBoolean("sendPVEDeathMessages");
 		Defaults.DISABLE_PVP_MESSAGES= !config.getBoolean("sendPVPDeathMessages");
 		Defaults.RADIUS 	= config.getInt("msgRadius", 0);
+		Defaults.MSG_TOP_HEADER = config.getString("topHeaderMsg",Defaults.MSG_TOP_HEADER);
+		Defaults.MSG_TOP_BODY = config.getString("topBodyMsg",Defaults.MSG_TOP_BODY);
+		BTEntityListener.setIgnoreEntities(config.getStringList("ignoreEntities"));
+	}
+	public static File getFile() {
+		return f;
+	}
+	public static YamlConfiguration getConfig() {
+		return config;
 	}
 }
