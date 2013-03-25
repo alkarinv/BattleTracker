@@ -21,6 +21,7 @@
 # &d  Pink
 # &e  Yellow
 # &f  White
+version: 1.0
 pve:
   prefix: "&e[PvE]&f "
   meleeDeaths:
@@ -39,6 +40,8 @@ pve:
   contact:
     - "&6%d&f should learn to not jump on a cactus"
   block_explosion:
+    - "&6%d&f has been shredded by TNT"
+  primedtnt:
     - "&6%d&f has been shredded by TNT"
   suffocation:
     - "&6%d&f ran out of breath"
@@ -78,6 +81,15 @@ pve:
     - "&6%d&f was overwhelmed by silverfish"
   enderman:
     - "&8Endermen&f have taken &6%d&f to the nether"
+    - '&6%d&f looked into the eyes of the&8Endermen'
+  snowman:
+    - '&8Endermen&f have taken &6%d&f to the nether'
+  ozelot:
+    - 'The cute ocelot showed its power to &6%d&f'
+    - '&6%d&f discovered that ocelots have fangs'
+  anvil:
+    - '&6%d&f was crushed by an anvil'
+    - '&6%d&f found to use anvils, not stand under them'
   wolf:
     - "&6%d&f was hunted down by the pack"
     - "&6%d&f was devored by wolves"
@@ -119,7 +131,8 @@ pvp:
   air:
     - "&6%k&f pummeled &6%d&f with their bare hands!"
     - "&6%d&f was no match for the combat skills of &6%k&f"
-    - "&6%k&f showed &6%k&f that fists are weapons too"
+    - "&6%k&f showed &6%d&f that fists are weapons too"
+    - "&6%k&f fists broke down &6%d&f"
   diamond_sword:
     - "&6%k&f sliced through &6%d&f with a &6%i&f"
     - "&6%k&f's &6%i&f split &6%d&f in two"

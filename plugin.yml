@@ -2,7 +2,7 @@ name: BattleTracker
 
 main: mc.alk.tracker.Tracker
 
-version: 2.4.1.3
+version: 2.5
 
 author: Alkarin
 softdepend: [BattleCore,Herochat,TownyChat]

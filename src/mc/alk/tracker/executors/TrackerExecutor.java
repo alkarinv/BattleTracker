@@ -12,24 +12,21 @@ import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.util.TimeUtil;
 
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 
 public class TrackerExecutor extends CustomCommandExecutor {
-	TrackerInterface ti;
+	final TrackerInterface ti;
 	public static final int MAX_RECORDS = 100;
 	public TrackerExecutor(TrackerInterface ti) {
 		super();
 		this.ti =ti;
 	}
 
-	@MCCommand(cmds={"top"}, min=1,usage="top [x] [team size]")
-	public boolean showTopXOther(CommandSender sender, Command cmd, String[] args){
+	@MCCommand(cmds={"top"}, usage="top [x] [team size]")
+	public boolean showTopXOther(CommandSender sender, String[] args){
 		int x = 5;
 		StatType st = null;
 		if (args.length > 1){
@@ -169,7 +166,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 	public Stat findStat(String name){
 		Stat stat = ti.getRecord(name);
 		if (stat == null){ /// Find a player matching that name, hopefully
-			Player op = findOnlinePlayer(name);
+			OfflinePlayer op = findOfflinePlayer(name);
 			if (op == null){
 				return null;}
 			stat = ti.loadRecord(op);
@@ -177,27 +174,4 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		return stat;
 	}
 
-	protected Player findOnlinePlayer(String name) {
-		if (name == null)
-			return null;
-		Server server =Bukkit.getServer();
-		Player lastPlayer = server.getPlayer(name);
-		if (lastPlayer != null)
-			return lastPlayer;
-
-		Player[] online = server.getOnlinePlayers();
-
-		for (Player player : online) {
-			String playerName = player.getName();
-			if (playerName.equalsIgnoreCase(name)) {
-				return player;
-			} else if (playerName.toLowerCase().indexOf(name.toLowerCase()) != -1) {
-				if (lastPlayer != null) {
-					return null;}
-				lastPlayer = player;
-			}
-		}
-
-		return lastPlayer;
-	}
 }

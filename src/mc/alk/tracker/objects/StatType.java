@@ -1,5 +1,7 @@
 package mc.alk.tracker.objects;
 
+import org.bukkit.ChatColor;
+
 
 public enum StatType {
 	WINS("Wins"),KILLS("Kills"), LOSSES("Losses"),DEATHS("Deaths"),TIES("Ties"),
@@ -33,5 +35,32 @@ public enum StatType {
 			return WLRATIO;
 		}
 		return gt;
+	}
+	public ChatColor color(){
+		switch(this){
+		case WLRATIO:
+		case KDRATIO:
+			return ChatColor.DARK_GREEN;
+		case WINS:
+		case KILLS:
+			return ChatColor.GREEN;
+		case DEATHS:
+		case LOSSES:
+			return ChatColor.DARK_RED;
+		case MAXRANKING:
+			return ChatColor.GOLD;
+		case MAXRATING:
+			return ChatColor.GOLD;
+		case RANKING:
+		case RATING:
+			return ChatColor.GOLD;
+		case STREAK:
+		case MAXSTREAK:
+			return ChatColor.DARK_PURPLE;
+		case TIES:
+			return ChatColor.YELLOW;
+		default:
+			return ChatColor.YELLOW;
+		}
 	}
 }

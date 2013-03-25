@@ -31,7 +31,7 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		sendMessage(sender, "&a[BattleTracker]&2 debugging for &6" + section +"&2 now &6" + on);
 	}
 
-	@MCCommand( cmds = {"set"}, perm="tracker.admin", usage="set <pvp | pve> <section> <true | false>")
+	@MCCommand( cmds = {"set"}, perm=Defaults.ADMIN_PERM, usage="set <pvp | pve> <section> <true | false>")
 	public void pvpToggle(CommandSender sender, String pvp, String section, Boolean on){
 		boolean ispvp = pvp.equalsIgnoreCase("pvp");
 		String type = ispvp ? "PvP" : "PvE";
@@ -67,14 +67,14 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		return sendMessage(sender, player.getName() +" rating now " + rating);
 	}
 
-	@MCCommand(cmds={"reload"},perm="tracker.admin")
+	@MCCommand(cmds={"reload"},perm=Defaults.ADMIN_PERM)
 	public boolean reload(CommandSender sender){
 		Tracker.getSelf().loadConfigs();
 
 		return sendMessage(sender, "&2Configs reloaded for BattleTracker");
 	}
 
-	@MCCommand(cmds={"hide"},perm="tracker.admin")
+	@MCCommand(cmds={"hide"},perm=Defaults.ADMIN_PERM)
 	public boolean hide(CommandSender sender, String db, OfflinePlayer player, Boolean hide){
 		if (!Tracker.hasInterface(db))
 			return sendMessage(sender,"&cDatabase "+db +" does not exist");

@@ -255,4 +255,20 @@ public abstract class Stat extends CacheObject<String,Stat>{
 			this.hide = hide;
 		}
 	}
+
+	public float getStat(StatType statType) {
+		switch(statType){
+		case WINS: case KILLS: return getWins();
+		case LOSSES: case DEATHS: return getLosses();
+		case RANKING: case RATING: return getRating();
+		case KDRATIO : case WLRATIO : return getKDRatio();
+		case MAXRANKING : case MAXRATING : return getMaxRating();
+		case MAXSTREAK: return getMaxStreak();
+		case STREAK: return getStreak();
+		case TIES: return getTies();
+		default:
+			break;
+		}
+		return 0;
+	}
 }

@@ -52,7 +52,7 @@ public class TestSignConfig extends TestCase{
 		SignController sc = new SignController();
 		SignSerializer ser = new SignSerializer(sc);
 		for (int i=0;i<n;i++){
-			sc.addSign(new StatSign(new Location(null,i,i,i), SignType.TOP));
+			sc.addSign(new StatSign("arena",new Location(null,i,i,i), SignType.TOP));
 		}
 
 		ser.setConfig(signFile);

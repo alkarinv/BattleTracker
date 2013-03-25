@@ -1,6 +1,9 @@
 package mc.alk.tracker;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.battleCore.MCPlugin;
 import mc.alk.battleCore.Version;
@@ -14,15 +17,20 @@ import mc.alk.tracker.executors.BattleTrackerExecutor;
 import mc.alk.tracker.executors.TrackerExecutor;
 import mc.alk.tracker.listeners.BTEntityListener;
 import mc.alk.tracker.listeners.BTPluginListener;
+import mc.alk.tracker.listeners.SignListener;
+import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.serializers.SignSerializer;
 import mc.alk.tracker.serializers.YamlConfigUpdater;
 import mc.alk.tracker.serializers.YamlMessageUpdater;
+
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 
 public class Tracker extends MCPlugin{
 	static Tracker plugin;
 	TrackerController sc;
-	static HashMap<String, TrackerInterface> interfaces = new HashMap<String,TrackerInterface>();
+	static Map<String, TrackerInterface> interfaces = new ConcurrentHashMap<String,TrackerInterface>();
 	SignController signController = new SignController();
 	SignSerializer signSerializer;
 
@@ -34,17 +42,29 @@ public class Tracker extends MCPlugin{
 		loadConfigs();
 		getServer().getPluginManager().registerEvents(new BTEntityListener(), this);
 		getServer().getPluginManager().registerEvents(new BTPluginListener(), this);
+		getServer().getPluginManager().registerEvents(new SignListener(signController), this);
 
 		getCommand("battleTracker").setExecutor(new BattleTrackerExecutor());
 		getCommand("btpvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
 		getCommand("btpve").setExecutor(new TrackerExecutor(getInterface(Defaults.PVE_INTERFACE)));
 
 		BTPluginListener.loadPlugins();
+
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
+			@Override
+			public void run() {
+				signController.updateSigns();
+			}
+		}, 20, 1000);
 	}
 
 	@Override
 	public void onDisable(){
 		saveConfigs();
+	}
+	@Override
+	public void onLoad(){
+		ConfigurationSerialization.registerClass(StatSign.class);
 	}
 
 	public void loadConfigs(){
@@ -111,5 +131,9 @@ public class Tracker extends MCPlugin{
 	public static boolean hasInterface(String interfaceName) {
 		String iname = interfaceName.toLowerCase();
 		return interfaces.containsKey(iname);
+	}
+
+	public static Collection<TrackerInterface> getAllInterfaces() {
+		return new ArrayList<TrackerInterface>(interfaces.values());
 	}
 }
