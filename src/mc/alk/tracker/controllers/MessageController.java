@@ -5,9 +5,9 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Random;
 
-import mc.alk.controllers.MC;
 import mc.alk.tracker.objects.SpecialType;
 import mc.alk.util.InventoryUtil;
+import mc.alk.v1r5.controllers.MC;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;

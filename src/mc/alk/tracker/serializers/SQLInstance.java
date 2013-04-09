@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import mc.alk.serializers.SQLSerializer;
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
@@ -22,7 +21,8 @@ import mc.alk.tracker.objects.VersusRecords;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
-import mc.alk.util.Log;
+import mc.alk.v1r5.serializers.SQLSerializer;
+import mc.alk.v1r5.util.Log;
 
 
 public class SQLInstance extends SQLSerializer{

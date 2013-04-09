@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import mc.alk.battleCore.Version;
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
@@ -12,6 +11,7 @@ import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.ranking.RatingCalculator;
+import mc.alk.v1r5.core.Version;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;

@@ -2,7 +2,6 @@ package mc.alk.tracker.executors;
 
 import java.util.List;
 
-import mc.alk.executors.CustomCommandExecutor;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.objects.Stat;
@@ -11,6 +10,7 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.util.TimeUtil;
+import mc.alk.v1r5.executors.CustomCommandExecutor;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;

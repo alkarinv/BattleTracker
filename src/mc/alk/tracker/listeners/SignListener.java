@@ -8,7 +8,7 @@ import mc.alk.tracker.objects.SignType;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.exceptions.InvalidSignException;
-import mc.alk.util.AutoClearingTimer;
+import mc.alk.v1r5.util.AutoClearingTimer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,6 +18,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -59,6 +60,19 @@ public class SignListener implements Listener{
 	}
 
 	@EventHandler
+	public void onBlockBreak(BlockBreakEvent event){
+		final Block block = event.getBlock();
+		final Material type = block.getType();
+		if (!(type.equals(Material.SIGN) || type.equals(Material.SIGN_POST) || type.equals(Material.WALL_SIGN))) {
+			return;}
+		Sign s = (Sign)block.getState();
+		final String l = s.getLine(0);
+		if (l == null || l.isEmpty() || l.charAt(0) != '[')
+			return;
+		signController.removeSignAt(s.getLocation());
+	}
+
+	@EventHandler
 	public void onSignChange(SignChangeEvent event){
 		final Block block = event.getBlock();
 		final Material type = block.getType();
@@ -90,14 +104,17 @@ public class SignListener implements Listener{
 			@Override
 			public void run() {
 				signController.updateSigns();
+				Tracker.getSelf().saveConfig();
 			}
 		},40);
-		Tracker.getSelf().saveConfig();
 	}
 
 	private StatSign getStatSign(Location l, String lines[]) throws InvalidSignException {
 		/// Quick check to make sure this is even a stat sign
-		if (lines[0].isEmpty() || lines[0].charAt(0) != '['){
+		/// make sure first two lines are not null or empty.. line 1 starts with '['
+		if (lines.length < 2 ||
+				lines[0] == null || lines[0].isEmpty() || lines[0].charAt(0) != '[' ||
+				lines[1] == null || lines[1].isEmpty()){
 			return null;}
 
 		/// find the Sign Type, like top, personal

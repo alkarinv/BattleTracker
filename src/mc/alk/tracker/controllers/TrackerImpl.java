@@ -12,8 +12,6 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import mc.alk.battleCore.Version;
-import mc.alk.serializers.SQLSerializerConfig;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
@@ -29,6 +27,8 @@ import mc.alk.tracker.ranking.RatingCalculator;
 import mc.alk.tracker.serializers.SQLInstance;
 import mc.alk.tracker.util.Cache;
 import mc.alk.tracker.util.Cache.CacheSerializer;
+import mc.alk.v1r5.core.Version;
+import mc.alk.v1r5.serializers.SQLSerializerConfig;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.bukkit.ChatColor;

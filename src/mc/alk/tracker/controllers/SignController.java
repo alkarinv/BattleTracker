@@ -3,6 +3,8 @@ package mc.alk.tracker.controllers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,8 +14,9 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.objects.StatType;
-import mc.alk.util.SerializerUtil;
 import mc.alk.util.SignUtil;
+import mc.alk.v1r5.util.Log;
+import mc.alk.v1r5.util.SerializerUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
@@ -62,6 +65,7 @@ public class SignController {
 		synchronized(topSigns){
 			map = new HashMap<String,StatSign>(topSigns);
 		}
+		Collection<String> badSigns = new HashSet<String>();
 		for (TrackerInterface ti : Tracker.getAllInterfaces()){
 			final String tiName = ti.getInterfaceName().toUpperCase();
 			Map<StatType, List<Stat>> stats = new HashMap<StatType, List<Stat>>();
@@ -71,8 +75,11 @@ public class SignController {
 				if (!ss.getDBName().toUpperCase().equals(tiName)){
 					continue;}
 				Sign s = getSign(loc);
-				if (s == null)
+				if (s == null){
+					badSigns.add(loc);
 					continue;
+				}
+
 				switch(ss.getSignType()){
 				case TOP:
 					doTopSign(ss,s,ti,stats);
@@ -81,6 +88,11 @@ public class SignController {
 					break;
 				}
 
+			}
+		}
+		synchronized(topSigns){
+			for (String s: badSigns){
+				topSigns.remove(s);
 			}
 		}
 		updating = false;
@@ -92,41 +104,47 @@ public class SignController {
 		List<Sign> signList = new ArrayList<Sign>();
 
 		boolean foundUpStatSign = false;
-		List<Sign> upsignList = new ArrayList<Sign>();
+		LinkedList<Sign> upsignList = new LinkedList<Sign>();
 		/// Search up
 		int x = s.getLocation().getBlockX();
 		int y = s.getLocation().getBlockY();
 		int z = s.getLocation().getBlockZ();
 		while ((sign = getSign(w,x,++y,z)) != null){
 			/// another command sign, don't continue
-			if (!sign.getLine(0).isEmpty() && sign.getLine(0).startsWith("[")){
+			if (breakLine(sign.getLine(0))){
 				foundUpStatSign = true;
 				break;
 			}
-			upsignList.add(sign);
+			upsignList.addFirst(sign);
 		}
 		/// If there isnt a conflicting sign above, then add all those signs as well
 		if (!foundUpStatSign){
 			signList.addAll(upsignList);}
 
 		/// Add self
+		int originalSignIndex = signList.size();
 		signList.add(s);
 
+		sign = null;
 		/// Search down
 		x = s.getLocation().getBlockX();
 		y = s.getLocation().getBlockY();
 		z = s.getLocation().getBlockZ();
 		while ((sign = getSign(w,x,--y,z)) != null){
+			String line = sign.getLine(0);
 			/// another command sign, don't continue
-			if (!sign.getLine(0).isEmpty() && sign.getLine(0).startsWith("["))
+			if (breakLine(line))
 				break;
 			signList.add(sign);
 		}
 
-
 		List<Stat> toplist= stats.get(ss.getStatType());
 		if (toplist == null || toplist.size() < signList.size()*4){ /// Load List
 			toplist = ti.getTopX(ss.getStatType(), signList.size() * 4);
+			if (toplist == null){ /// some error happened, cant update this type
+				Log.warn("[BattleTracker] TopList wasnt found for " + ss.getStatType() +"  at " + s.getLocation());
+				return;
+			}
 			stats.put(ss.getStatType(), toplist);
 		}
 
@@ -136,14 +154,13 @@ public class SignController {
 			int startIndex = 0;
 			s = signList.get(i);
 			String line = s.getLine(0);
-			if (!line.isEmpty() && line.charAt(0)=='['){
+			if (i == originalSignIndex){
 				s.setLine(0, MessageController.colorChat("[&e"+StringUtils.capitalize(ti.getInterfaceName())+"&0]"));
 				s.setLine(1, MessageController.colorChat("["+ss.getStatType().color()+ss.getStatType()+"&0]"));
 				startIndex = 2;
 			}
 
 			for (int j=startIndex;j< 4;j++){
-				curTop++;
 				if (curTop >= toplist.size()){
 					quit = true;
 					break;
@@ -151,18 +168,21 @@ public class SignController {
 				String name = toplist.get(curTop).getName();
 				int val = (int) toplist.get(curTop).getStat(ss.getStatType());
 				String sval = val +"";
-				int length = (curTop+"").length() + sval.length() + 1; // 1 delimiters
+				int length = ((curTop+1)+"").length() + sval.length() + 1; // 1 delimiters
 				if (name.length() + length > 16){
 					name = name.substring(0, Math.min(name.length(), length));
 				}
 
 				String spacing = StringUtils.repeat(" ", 15-(length + name.length()));
-				line = curTop+"."+ name+ spacing +sval;
+				line = (curTop+1)+"."+ name+ spacing +sval;
 				s.setLine(j, line+"         ");
+				curTop++;
 			}
 			s.update(true);
-
 		}
+	}
+	private boolean breakLine(String line) {
+		return line != null && (!line.isEmpty() && line.startsWith("["));
 	}
 	private Sign getSign(World w, int x, int y, int z) {
 		Block b = w.getBlockAt(x, y, z);
@@ -223,5 +243,15 @@ public class SignController {
 			lines[i] = MessageController.colorChat(lines[i]);
 		}
 		SignUtil.sendLines(player, s, lines);
+	}
+	public void clearSigns() {
+		topSigns.clear();
+		personalSigns.clear();
+
+	}
+	public void removeSignAt(Location location) {
+		String l = StatSign.getLocationString(location);
+		topSigns.remove(l);
+		personalSigns.remove(l);
 	}
 }

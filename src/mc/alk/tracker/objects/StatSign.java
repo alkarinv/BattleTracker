@@ -3,8 +3,8 @@ package mc.alk.tracker.objects;
 import java.util.HashMap;
 import java.util.Map;
 
-import mc.alk.util.Log;
-import mc.alk.util.SerializerUtil;
+import mc.alk.v1r5.util.Log;
+import mc.alk.v1r5.util.SerializerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;

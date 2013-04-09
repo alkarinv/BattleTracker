@@ -9,7 +9,7 @@ import mc.alk.tracker.controllers.SignController;
 import mc.alk.tracker.objects.SignType;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.serializers.SignSerializer;
-import mc.alk.util.SerializerUtil;
+import mc.alk.v1r5.util.SerializerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;

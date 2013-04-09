@@ -1,11 +1,13 @@
 package mc.alk.tracker.executors;
 
-import mc.alk.executors.CustomCommandExecutor;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.StatType;
+import mc.alk.v1r5.executors.CustomCommandExecutor;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -37,9 +39,9 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		String type = ispvp ? "PvP" : "PvE";
 		if (section.equalsIgnoreCase("msg") || section.equalsIgnoreCase("message")){
 			if (ispvp){
-				Defaults.DISABLE_PVP_MESSAGES = on;
+				Defaults.PVP_MESSAGES = on;
 			} else {
-				Defaults.DISABLE_PVE_MESSAGES = on;
+				Defaults.PVE_MESSAGES = on;
 			}
 			sendMessage(sender, "&a[BattleTracker]&2 "+type+" messages now &6" + on);
 		} else {
@@ -65,6 +67,15 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		TrackerInterface ti = Tracker.getInterface(db);
 		ti.setRating(player, rating);
 		return sendMessage(sender, player.getName() +" rating now " + rating);
+	}
+
+	@MCCommand(cmds={"resetRatings"},op=true)
+	public boolean resetRatings(CommandSender sender, String db){
+		if (!Tracker.hasInterface(db))
+			return sendMessage(sender,"&c"+db +" does not exist");
+		TrackerInterface ti = Tracker.getInterface(db);
+		ti.resetStats();
+		return sendMessage(sender,"&2All stats reset for &6" + ti.getInterfaceName() );
 	}
 
 	@MCCommand(cmds={"reload"},perm=Defaults.ADMIN_PERM)
@@ -99,6 +110,13 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		TrackerInterface ti = Tracker.getInterface(db);
 		ti.printTopX(sender, StatType.RATING, 10, x);
 		return true;
+	}
+
+	@MCCommand(cmds={"showConfigOptions"}, op=true)
+	public boolean showConfigVars(CommandSender sender){
+		ReflectionToStringBuilder rtsb = new ReflectionToStringBuilder(
+				Defaults.class, ToStringStyle.MULTI_LINE_STYLE);
+		return sendMessage(sender, rtsb.toString());
 	}
 
 }

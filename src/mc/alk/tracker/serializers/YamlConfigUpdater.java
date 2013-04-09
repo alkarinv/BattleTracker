@@ -3,8 +3,8 @@ package mc.alk.tracker.serializers;
 import java.io.File;
 import java.io.IOException;
 
-import mc.alk.plugin.updater.FileUpdater;
-import mc.alk.plugin.updater.Version;
+import mc.alk.plugin.updater.v1r2.FileUpdater;
+import mc.alk.plugin.updater.v1r2.Version;
 import mc.alk.tracker.Tracker;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -21,6 +21,9 @@ public class YamlConfigUpdater {
 		try{
 			if (curVersion.compareTo(newVersion) < 0){
 				curVersion = updateTo1Point0(configFile,backupDir, curVersion, newVersion);}
+			newVersion = new Version("1.0.1");
+			if (curVersion.compareTo(newVersion) < 0){
+				curVersion = updateTo1Point01(configFile,backupDir, curVersion, newVersion);}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
@@ -38,5 +41,18 @@ public class YamlConfigUpdater {
 				"ignoreEntities: []");
 		return fu.update();
 	}
-
+	private Version updateTo1Point01(File oldFile, File backupDir, Version newVersion, Version oldVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(oldFile,backupDir,newVersion,oldVersion);
+		fu.replace(".*version:.*", "version: 1.0.1");
+		fu.addAfter(".*sendPVEDeathMessages:.*", "",
+				"### If server wide PvP or Pve messages are disabled you can turn",
+				"### these to true to allow the killer and the dead person",
+				"### to still see the messages",
+				"sendInvolvedPvPMessages: false",
+				"sendInvolvedPvEMessages: false");
+		fu.addAfter(".*ignoreEntities:.*", "",
+				"### Should we even use leaderboard signs?",
+				"allowLeaderboardSigns: true");
+		return fu.update();
+	}
 }

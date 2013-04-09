@@ -64,6 +64,7 @@ public class BTEntityListener implements Listener{
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		ede(event);
 	}
+
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDeath(EntityDeathEvent event) {
 		if (event instanceof PlayerDeathEvent)
@@ -101,22 +102,24 @@ public class BTEntityListener implements Listener{
 			//		if (!targetPlayer && !Defaults.PVP_TRACK && !Defaults.PVP_MSG){
 			return;
 		}
-		EntityDamageEvent lastDamageCause = targetEntity.getLastDamageCause();
 
-		/// Get our killer
+		/// Determine our killer
+		EntityDamageEvent lastDamageCause = targetEntity.getLastDamageCause();
+		Player killerEntity = null;
 		if (lastDamageCause instanceof EntityDamageByEntityEvent){
 			Entity damager = ((EntityDamageByEntityEvent) lastDamageCause).getDamager();
 			if (damager instanceof Player) { /// killer is player
-				Player pk = (Player) damager;
-				killer = pk.getName();
+				killerEntity = (Player) damager;
+				killer = killerEntity.getName();
 				killerPlayer = true;
-				killingWeapon = pk.getItemInHand();
+				killingWeapon = killerEntity.getItemInHand();
 			} else if (damager instanceof Projectile) { /// we have some sort of projectile
 				isMelee = false;
 				Projectile proj = (Projectile) damager;
 				if (proj.getShooter() instanceof Player){ /// projectile was shot by a player
 					killerPlayer = true;
-					killer = ((Player) proj.getShooter()).getName();
+					killerEntity = (Player) proj.getShooter();
+					killer = killerEntity.getName();
 				} else if (proj.getShooter() != null){ /// projectile shot by some mob, or other source
 					killer = proj.getShooter().getType().getName();
 				} else {
@@ -125,8 +128,10 @@ public class BTEntityListener implements Listener{
 			} else if (damager instanceof Tameable && ((Tameable) damager).isTamed()) {
 				AnimalTamer at = ((Tameable) damager).getOwner();
 				if (at != null){
-					if (at instanceof Player)
+					if (at instanceof Player){
 						killerPlayer = true;
+						killerEntity = (Player) at;
+					}
 					killer = at.getName();
 				} else {
 					killer = damager.getType().getName();
@@ -144,26 +149,32 @@ public class BTEntityListener implements Listener{
 			return;
 		if (ignoreEntities.contains(killer) || ignoreEntities.contains(targetEntity))
 			return;
-
 		/// Decide what to do
 		if (targetPlayer && killerPlayer){
 			/// Check to see if we add the records
 			if (ConfigController.getBoolean("trackPvP",true))
 				addRecord(playerTi,killer,target,WLT.WIN);
-			/// Check to see if an admin has disabled death messages
 			PlayerDeathEvent pde = (PlayerDeathEvent) event;
-			if (Defaults.DISABLE_PVP_MESSAGES){
-				sendMessage(pde,null);
+
+			/// Check to see if an we have disabled death messages
+			if (!Defaults.PVP_MESSAGES && !Defaults.BUKKIT_PVP_MESSAGES){
+				/// Even with disabled messages, we can still send messages to involved players
+				if (Defaults.INVOLVED_PVP_MESSAGES){
+					String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,killingWeapon);
+					sendMessage(killerEntity, (Player)targetEntity,msg);
+				} else {
+					sendMessage(pde,null);
+				}
 				return;
 			}
-			/// Check sending messages
-			if (ConfigController.getBoolean("sendPVPDeathMessages",true)){
+
+			/// Check sending custom PvP messages
+			if (Defaults.PVP_MESSAGES){
 				//				final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
 				String msg = getPvPDeathMessage(killer,target,isMelee,playerTi,killingWeapon);
 				sendMessage(pde,msg);
-			} else if (!ConfigController.getBoolean("showBukkitPVPMessages",false)){
-				sendMessage(pde,null);
 			}
+			/// else we just let bukkit handle it like normal
 		} else if (!targetPlayer && !killerPlayer){ /// mobs killing each other, or dying by traps
 			/// Do nothing
 		} else { /// One player, One other
@@ -180,22 +191,41 @@ public class BTEntityListener implements Listener{
 			if (targetPlayer && event instanceof PlayerDeathEvent){
 				/// Check to see if an admin has disabled death messages
 				PlayerDeathEvent pde = (PlayerDeathEvent) event;
-				if (Defaults.DISABLE_PVE_MESSAGES){
-					pde.setDeathMessage(null);
+				if (!Defaults.PVE_MESSAGES && !Defaults.BUKKIT_PVE_MESSAGES){
+					if (Defaults.INVOLVED_PVE_MESSAGES){
+						final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
+						String msg = getPvEDeathMessage(killer,target,isMelee,worldTi,wpn);
+						sendMessage(null,(Player) targetEntity,msg);
+					} else {
+						pde.setDeathMessage(null);
+					}
 					return;
 				}
 
-				if (ConfigController.getBoolean("sendPVEDeathMessages",true)){
+				if (Defaults.PVE_MESSAGES){
 					final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
 					String msg = getPvEDeathMessage(killer,target,isMelee,worldTi,wpn);
 					sendMessage(pde,msg);
-				} else if (!ConfigController.getBoolean("showBukkitPVEMessages",false)){
-					sendMessage(pde,null);
 				}
+				/// Else let bukkit handle
 			}
 		}
 	}
+
+
+	private void sendMessage(Player killerEntity, Player targetEntity, String msg) {
+		if (killerEntity != null){
+			MessageController.sendMessage(killerEntity, msg);}
+		if (targetEntity != null){
+			MessageController.sendMessage(targetEntity, msg);}
+	}
+
 	private void sendMessage(PlayerDeathEvent event, String msg){
+		if (msg == null){
+			event.setDeathMessage(null);
+			return;
+		}
+
 		if (Defaults.RADIUS <= 0){
 			event.setDeathMessage(msg);
 			return;

@@ -9,8 +9,10 @@ public class Defaults {
 	public static int STREAK_EVERY = 15;
 	public static int RAMPAGE_TIME = 7000;
 
-	public static boolean DISABLE_PVP_MESSAGES = false;
-	public static boolean DISABLE_PVE_MESSAGES = false;
+	public static boolean PVP_MESSAGES = true;
+	public static boolean PVE_MESSAGES = true;
+	public static boolean BUKKIT_PVP_MESSAGES = false;
+	public static boolean BUKKIT_PVE_MESSAGES = false;
 
 	public final static boolean DEBUG = false;
 	public static boolean DEBUG_ADD_RECORDS = false;
@@ -22,5 +24,10 @@ public class Defaults {
 	public static String MSG_TOP_HEADER = "&4Top &6{interfaceName}&4 {stat} TeamSize:{teamSize}";
 	public static String MSG_TOP_BODY ="&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]";
 
+	public static boolean INVOLVED_PVP_MESSAGES = false;
+	public static boolean INVOLVED_PVE_MESSAGES = false;
+
 	public static final String ADMIN_PERM = "tracker.admin";
+
+	public static boolean USE_SIGNS = true;
 }
