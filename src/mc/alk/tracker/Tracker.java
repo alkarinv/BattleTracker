@@ -2,6 +2,7 @@ package mc.alk.tracker;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +31,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 public class Tracker extends MCPlugin{
 	static Tracker plugin;
 	TrackerController sc;
-	static Map<String, TrackerInterface> interfaces = new ConcurrentHashMap<String,TrackerInterface>();
+	static Map<String, TrackerInterface> interfaces = Collections.synchronizedMap(
+			new ConcurrentHashMap<String,TrackerInterface>());
 	static SignController signController = new SignController();
 	SignSerializer signSerializer;
 
@@ -53,6 +55,7 @@ public class Tracker extends MCPlugin{
 
 	@Override
 	public void onDisable(){
+		plugin.setEnabled(false);
 		saveConfig();
 	}
 	@Override
@@ -67,12 +70,21 @@ public class Tracker extends MCPlugin{
 	}
 
 	public void loadConfigs(){
+		if (!plugin.isEnabled()){
+			return;}
 		/// Load
 		ConfigController.setConfig(load("/default_files/config.yml",getDataFolder().getPath() +"/config.yml"));
 		MessageController.setConfig(load("/default_files/messages.yml",getDataFolder().getPath() +"/messages.yml"));
-		signSerializer = new SignSerializer(signController);
-		signSerializer.setConfig(getDataFolder().getPath()+"/signs.yml");
-		signSerializer.loadAll();
+		/// on some servers with non bukkit worlds, this is too quick. delay this till after all plugins
+		/// are loaded
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this,new Runnable(){
+			@Override
+			public void run() {
+				signSerializer = new SignSerializer(signController);
+				signSerializer.setConfig(getDataFolder().getPath()+"/signs.yml");
+				signSerializer.loadAll();
+			}
+		}, 22);
 
 		/// Update
 		YamlConfigUpdater cu = new YamlConfigUpdater();
@@ -85,7 +97,7 @@ public class Tracker extends MCPlugin{
 		ConfigController.setConfig(ConfigController.getFile());
 		MessageController.setConfig(MessageController.getFile());
 
-		if (Defaults.USE_SIGNS && plugin.isEnabled()){
+		if (Defaults.USE_SIGNS){
 			getServer().getPluginManager().registerEvents(new SignListener(signController), this);
 
 			Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){

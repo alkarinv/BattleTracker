@@ -241,7 +241,6 @@ public class SQLInstance extends SQLSerializer{
 		if (x <= 0){
 			x = Integer.MAX_VALUE;}
 		RSCon rscon = null;
-
 		if (teamcount == null){
 			switch(statType){
 			case WINS: case KILLS: rscon = executeQuery(get_topx_wins,x);break;

@@ -95,7 +95,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		return true;
 	}
 
-	@MCCommand(cmds={"addKill"},op=true,min=3,usage="addkill <player1> <player2>: this is a debugging method")
+	@MCCommand(cmds={"addKill"},op=true,usage="addkill <player1> <player2>: this is a debugging method")
 	public boolean addKill(CommandSender sender, String p1, String p2){
 		Stat stat = ti.loadPlayerRecord(p1);
 		Stat stat2 = ti.loadPlayerRecord(p2);

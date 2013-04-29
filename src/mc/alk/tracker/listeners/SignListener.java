@@ -39,7 +39,7 @@ public class SignListener implements Listener{
 		final Material type = block.getType();
 		if (!(type.equals(Material.SIGN) || type.equals(Material.SIGN_POST) || type.equals(Material.WALL_SIGN))) {
 			return ;}
-		StatSign ss = signController.getSign(event.getClickedBlock().getLocation());
+		StatSign ss = signController.getStatSign(event.getClickedBlock().getLocation());
 		if (ss == null)
 			return;
 		if (timer.withinTime(event.getPlayer().getName(),SECONDS*1000L)){

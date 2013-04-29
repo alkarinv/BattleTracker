@@ -70,6 +70,7 @@ public class Cache <Key, Value> {
 	}
 	CacheSerializer<Key,UniqueKey<Key>> serializer; /// Our serializer for the cache data
 	Map<Key,CacheElement> map = new HashMap<Key,CacheElement>(); /// a mapping of the key to the cache objects
+	boolean modified = false;
 	Set<Key> dirty = new HashSet<Key>(); /// which keys have been modified
 	Boolean autoFlush = false;
 	Long autoFlushTime = null;
@@ -193,6 +194,10 @@ public class Cache <Key, Value> {
 		return null;
 	}
 
+	public boolean isModified(){
+		return modified;
+	}
+
 	@SuppressWarnings("unchecked")
 	public Collection<Value> values() {
 		return (Collection<Value>) map.values();
@@ -203,6 +208,7 @@ public class Cache <Key, Value> {
 	 * @param key
 	 */
 	public void setDirty(Key... keys) {
+		modified = true;
 		synchronized(dirty){
 			for (Key key : keys){
 				if (DEBUG) System.out.println(" - setting dirty key = " + key + " v=" + map.get(key));
@@ -276,6 +282,7 @@ public class Cache <Key, Value> {
 					types.add(e.v);
 			}
 			dirty.clear();
+			modified = false;
 		}}
 		serializer.save(types);
 	}
@@ -297,6 +304,7 @@ public class Cache <Key, Value> {
 		synchronized(dirty){ synchronized(map){
 			map.clear();
 			dirty.clear();
+			modified = false;
 		}}
 	}
 
@@ -318,6 +326,7 @@ public class Cache <Key, Value> {
 				}
 			}
 			dirty.clear();
+			modified = false;
 			for (Key k: old){
 				map.remove(k);
 			}
@@ -331,6 +340,7 @@ public class Cache <Key, Value> {
 		synchronized(dirty){ synchronized(map){
 			map.clear();
 			dirty.clear();
+			modified = false;
 		}}
 	}
 }

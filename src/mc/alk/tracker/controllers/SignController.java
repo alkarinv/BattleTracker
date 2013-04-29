@@ -2,6 +2,8 @@ package mc.alk.tracker.controllers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,10 +17,10 @@ import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.util.SignUtil;
-import mc.alk.v1r5.util.Log;
 import mc.alk.v1r5.util.SerializerUtil;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -27,9 +29,11 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 public class SignController {
-	Map<String,StatSign> personalSigns = new HashMap<String,StatSign>();
+	Map<String,StatSign> personalSigns = new ConcurrentHashMap<String,StatSign>();
 	Map<String,StatSign> topSigns = new ConcurrentHashMap<String,StatSign>();
 	Map<String, Map<String,StatSign>> allSigns = new ConcurrentHashMap<String,Map<String,StatSign>>();
+	Map<String,Integer> prevSignCount = new ConcurrentHashMap<String,Integer>();
+
 	boolean updating = false;
 	public SignController(){
 		//		allSigns.put(key, value)
@@ -57,7 +61,7 @@ public class SignController {
 			addSign(sign);}
 	}
 
-	public void updateSigns(){
+	public synchronized void updateSigns(){
 		if (updating)
 			return;
 		updating = true;
@@ -66,9 +70,11 @@ public class SignController {
 			map = new HashMap<String,StatSign>(topSigns);
 		}
 		Collection<String> badSigns = new HashSet<String>();
-		for (TrackerInterface ti : Tracker.getAllInterfaces()){
+		Collection<TrackerInterface> interfaces = Tracker.getAllInterfaces();
+		List<StatSign> tops = new ArrayList<StatSign>();
+
+		for (TrackerInterface ti : interfaces){
 			final String tiName = ti.getInterfaceName().toUpperCase();
-			Map<StatType, List<Stat>> stats = new HashMap<StatType, List<Stat>>();
 
 			for (String loc : map.keySet()){
 				StatSign ss = map.get(loc);
@@ -82,13 +88,14 @@ public class SignController {
 
 				switch(ss.getSignType()){
 				case TOP:
-					doTopSign(ss,s,ti,stats);
+					tops.add(ss);
 					break;
 				default:
 					break;
 				}
-
 			}
+			doTopSigns(ti,tops);
+			tops.clear();
 		}
 		synchronized(topSigns){
 			for (String s: badSigns){
@@ -98,17 +105,83 @@ public class SignController {
 		updating = false;
 	}
 
-	private void doTopSign(StatSign ss, Sign s, TrackerInterface ti, Map<StatType,List<Stat>> stats) {
-		World w = s.getLocation().getWorld();
-		Sign sign = null;
-		List<Sign> signList = new ArrayList<Sign>();
+	/**
+	 * For all of the signs of this type
+	 * @param ti
+	 * @param signs
+	 */
+	private void doTopSigns(TrackerInterface ti, List<StatSign> statsigns){
+		if (statsigns == null || statsigns.isEmpty())
+			return;
+		/// Sort based on stattype
+		Collections.sort(statsigns, new Comparator<StatSign>(){
+			@Override
+			public int compare(StatSign arg0, StatSign arg1) {
+				if (arg0.getStatType() == null && arg1.getStatType() == null) return 0;
+				else if (arg1.getStatType() == null ) return -1;
+				else if (arg0.getStatType() == null ) return 1;
+				return arg0.getStatType().compareTo(arg1.getStatType());
+			}
+		});
+		/// Get the max length we need to query in the database for each stattype
+		/// Once we have found the max, do an async update for the statsigns
+		List<Stat> stats = new ArrayList<Stat>();
+		StatType ost = statsigns.get(0).getStatType();
+		StatType st = statsigns.get(0).getStatType();
+		List<StatSign> update = new ArrayList<StatSign>();
+		int max = 0;
+		boolean signsModified = ti.isModified();
+		boolean hasChange = signsModified;
+		int offset = 0;
+		for (StatSign ss: statsigns){
+			if (ss.getStatType() != st){
+				/// Update signs
+				if (hasChange)
+					updateSigns(ti,update,max, st,offset++);
+				/// Reset variables
+				st = ss.getStatType();
+				stats.clear();
+				update = new ArrayList<StatSign>();
+				max =0;
+				hasChange = signsModified;
+			}
+			update.add(ss);
+			/// If size != prevsize, they have added or removed signs, coutn as a change
+			int size = this.getUpDownCount(ss);
+			Integer prevSize = prevSignCount.get(ss.getLocationString());
+			if (prevSize == null || prevSize != size){
+				prevSignCount.put(ss.getLocationString(), size);
+				hasChange = true;
+			}
+			if (max  < size){
+				max = size;}
+		}
+		if (ost == st && hasChange){
+			updateSigns(ti,update,max,st,offset++);}
+	}
 
+	class SignResult{
+		final List<Sign> signs;
+		final int statSignIndex;
+		public SignResult(List<Sign> signs, int statSignIndex){
+			this.signs = signs;
+			this.statSignIndex = statSignIndex;
+		}
+	}
+
+	private SignResult getUpDown(StatSign ss) {
+		Sign s = getSign(ss.getLocation());
+		if (s == null)
+			return null;
+		Sign sign = null;
+		World w = s.getLocation().getWorld();
+		List<Sign> signList = new ArrayList<Sign>();
 		boolean foundUpStatSign = false;
-		LinkedList<Sign> upsignList = new LinkedList<Sign>();
 		/// Search up
 		int x = s.getLocation().getBlockX();
 		int y = s.getLocation().getBlockY();
 		int z = s.getLocation().getBlockZ();
+		LinkedList<Sign> upsignList = new LinkedList<Sign>();
 		while ((sign = getSign(w,x,++y,z)) != null){
 			/// another command sign, don't continue
 			if (breakLine(sign.getLine(0))){
@@ -137,57 +210,124 @@ public class SignController {
 				break;
 			signList.add(sign);
 		}
+		return new SignResult(signList,originalSignIndex);
+	}
 
-		List<Stat> toplist= stats.get(ss.getStatType());
-		if (toplist == null || toplist.size() < signList.size()*4){ /// Load List
-			toplist = ti.getTopX(ss.getStatType(), signList.size() * 4);
-			if (toplist == null){ /// some error happened, cant update this type
-				Log.warn("[BattleTracker] TopList wasnt found for " + ss.getStatType() +"  at " + s.getLocation());
-				return;
+	private int getUpDownCount(StatSign ss) {
+		Sign s = getSign(ss.getLocation());
+		if (s == null)
+			return 0;
+		int count = 1;
+
+		World w = s.getLocation().getWorld();
+		/// Search up
+		int x = s.getLocation().getBlockX();
+		int y = s.getLocation().getBlockY();
+		int z = s.getLocation().getBlockZ();
+		while (getSign(w,x,++y,z) != null){
+			count++;}
+
+		/// Search down
+		x = s.getLocation().getBlockX();
+		y = s.getLocation().getBlockY();
+		z = s.getLocation().getBlockZ();
+		while (getSign(w,x,--y,z) != null){
+			count++;}
+		return count;
+	}
+
+
+	private void updateSigns(final TrackerInterface ti,
+			final List<StatSign> update, final int max, final StatType type, int offset) {
+		Bukkit.getScheduler().scheduleAsyncDelayedTask(Tracker.getSelf(), new Runnable(){
+			@Override
+			public void run() {
+				List<Stat> toplist= ti.getTopX(type, max * 4);
+				if (toplist != null && !toplist.isEmpty()){
+					Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(),
+							new UpdateSigns(ti.getInterfaceName(), update,toplist));
+				}
 			}
-			stats.put(ss.getStatType(), toplist);
+		},5L*offset);
+	}
+
+	class UpdateSigns implements Runnable{
+		final String dbName;
+		final List<StatSign> statSignList;
+		final List<Stat> statList;
+
+		public UpdateSigns(String dbName, List<StatSign> update, List<Stat> toplist) {
+			this.dbName = StringUtils.capitalize(dbName);
+			this.statSignList = update;
+			this.statList = toplist;
 		}
 
-		boolean quit = false;
-		int curTop = 0;
-		for (int i =0;i< signList.size() && !quit;i++){
-			int startIndex = 0;
-			s = signList.get(i);
-			String line = s.getLine(0);
-			if (i == originalSignIndex){
-				s.setLine(0, MessageController.colorChat("[&e"+StringUtils.capitalize(ti.getInterfaceName())+"&0]"));
-				s.setLine(1, MessageController.colorChat("["+ss.getStatType().color()+ss.getStatType()+"&0]"));
-				startIndex = 2;
-			}
+		@Override
+		public void run() {
+			for (StatSign ss: statSignList){
+				Sign s = getSign(ss.getLocation());
+				if (s == null)
+					continue;
+				SignResult sr = getUpDown(ss);
+				if (sr == null || sr.signs.isEmpty())
+					continue;
+				List<Sign> signList = sr.signs;
 
-			for (int j=startIndex;j< 4;j++){
-				if (curTop >= toplist.size()){
-					quit = true;
-					break;
+				boolean quit = false;
+				int curTop = 0;
+				for (int i =0;i< signList.size() && !quit;i++){
+					int startIndex = 0;
+					s = signList.get(i);
+					if (i == sr.statSignIndex){
+						s.setLine(0, MessageController.colorChat("[&e"+dbName+"&0]"));
+						s.setLine(1, MessageController.colorChat("["+ss.getStatType().color()+ss.getStatType()+"&0]"));
+						s.setLine(2, MessageController.colorChat("&cNo Records"));
+						startIndex = 2;
+					}
+					for (int j=startIndex;j< 4;j++){
+						if (curTop >= statList.size()){
+							quit = true;
+							break;
+						}
+						int val = (int) statList.get(curTop).getStat(ss.getStatType());
+						String statLine = formatStatLine(
+								statList.get(curTop).getName(), val, curTop);
+						s.setLine(j, statLine+"         ");
+						curTop++;
+					}
+					s.update(true);
 				}
-				String name = toplist.get(curTop).getName();
-				int val = (int) toplist.get(curTop).getStat(ss.getStatType());
-				String sval = val +"";
-				int length = ((curTop+1)+"").length() + sval.length() + 1; // 1 delimiters
-				if (name.length() + length > 16){
-					name = name.substring(0, Math.min(name.length(), length));
-				}
-
-				String spacing = StringUtils.repeat(" ", 15-(length + name.length()));
-				line = (curTop+1)+"."+ name+ spacing +sval;
-				s.setLine(j, line+"         ");
-				curTop++;
 			}
-			s.update(true);
+		}
+
+		private String formatStatLine(String name, int val, int curTop) {
+			StringBuilder sb = new StringBuilder();
+			String sval = val +"";
+			int length = ((curTop+1)+"").length() + sval.length() + 1; // 1 delimiters
+			if (name.length() + length > 16){
+				name = name.substring(0, Math.min(name.length(), length));
+			}
+			String spacing = StringUtils.repeat(" ", 15-(length + name.length()));
+			sb.append((curTop+1)+"."+ name+ spacing +sval);
+			return sb.toString();
 		}
 	}
+
 	private boolean breakLine(String line) {
 		return line != null && (!line.isEmpty() && line.startsWith("["));
 	}
+
 	private Sign getSign(World w, int x, int y, int z) {
 		Block b = w.getBlockAt(x, y, z);
 		Material t = b.getType();
 		return t == Material.SIGN || t == Material.SIGN_POST || t==Material.WALL_SIGN ? (Sign)b.getState(): null;
+	}
+
+	private Sign getSign(Location l) {
+		if (l == null)
+			return null;
+		Material t = l.getBlock().getType();
+		return t == Material.SIGN || t == Material.SIGN_POST || t==Material.WALL_SIGN ? (Sign)l.getBlock().getState(): null;
 	}
 
 	private Sign getSign(String loc) {
@@ -198,7 +338,7 @@ public class SignController {
 		return t == Material.SIGN || t == Material.SIGN_POST || t==Material.WALL_SIGN ? (Sign)l.getBlock().getState(): null;
 	}
 
-	public StatSign getSign(Location location) {
+	public StatSign getStatSign(Location location) {
 		String key = StatSign.getLocationString(location);
 		if (personalSigns.containsKey(key))
 			return personalSigns.get(key);

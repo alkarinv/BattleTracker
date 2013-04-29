@@ -74,8 +74,12 @@ public class StatSign implements ConfigurationSerializable{
 	public String getLocationString() {
 		return SerializerUtil.getLocString(location);
 	}
+
 	public static String getLocationString(Location location){
 		return SerializerUtil.getLocString(location);
+	}
+	public Location getLocation(){
+		return location;
 	}
 	@Override
 	public String toString(){

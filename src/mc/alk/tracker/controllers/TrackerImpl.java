@@ -515,4 +515,8 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 		return true;
 	}
 
+	@Override
+	public boolean isModified(){
+		return cache.isModified();
+	}
 }

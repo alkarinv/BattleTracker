@@ -221,4 +221,12 @@ public interface TrackerInterface{
 	 */
 	public Version getVersion();
 	public List<WLTRecord> getWinsSince(Stat stat, Long time);
+
+	/**
+	 * Return whethe the database has changed
+	 * This is not guaranteed to be 100% correct if data is being
+	 * changed from outside the TrackerInterface
+	 * @return
+	 */
+	boolean isModified();
 }

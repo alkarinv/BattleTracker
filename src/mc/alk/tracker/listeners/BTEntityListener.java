@@ -99,7 +99,6 @@ public class BTEntityListener implements Listener{
 			return;
 		}
 		if (!targetPlayer && !ConfigController.getBoolean("trackPvP") && !ConfigController.getBoolean("sendPVPDeathMessages")){
-			//		if (!targetPlayer && !Defaults.PVP_TRACK && !Defaults.PVP_MSG){
 			return;
 		}
 
