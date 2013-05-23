@@ -42,6 +42,7 @@ public class ConfigController {
 		Defaults.MSG_TOP_BODY = config.getString("topBodyMsg",Defaults.MSG_TOP_BODY);
 		Defaults.USE_SIGNS = config.getBoolean("useSigns",Defaults.USE_SIGNS);
 		BTEntityListener.setIgnoreEntities(config.getStringList("ignoreEntities"));
+		BTEntityListener.setIgnoreWorlds(config.getStringList("ignoreWorlds"));
 	}
 
 	public static File getFile() {

@@ -9,7 +9,6 @@ import mc.alk.tracker.controllers.SignController;
 import mc.alk.tracker.objects.SignType;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.serializers.SignSerializer;
-import mc.alk.v1r5.util.SerializerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -28,7 +27,7 @@ public class TestSignConfig extends TestCase{
 	@Override
 	public void setUp(){
 		ConfigurationSerialization.registerClass(StatSign.class);
-		SerializerUtil.TESTING = true;
+//		SerializerUtil.TESTING = true;
 		if (!testDir.exists()){
 			assertTrue(testDir.mkdir());
 		}

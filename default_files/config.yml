@@ -1,4 +1,4 @@
-version: 1.0.1
+version: 1.0.2
 showBukkitPVPMessages: false # turn on and off normal bukkit death messages for pvp
 showBukkitPVEMessages: false # turn on and off normal bukkit death messages for pve
 sendPVPDeathMessages: true # send Custom Messages on PvP deaths
@@ -22,6 +22,9 @@ topBodyMsg: '&e#{rank}&4 {name} - {wins}:{losses}&6[{rating}]'
 
 ### ignore the following entities when they kill or are killed
 ignoreEntities: []
+
+### ignore the following worlds
+ignoreWorlds: []
 
 ### Should we even use leaderboard signs and personal signs?
 useSigns: true

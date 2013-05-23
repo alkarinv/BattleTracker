@@ -19,6 +19,7 @@ import mc.alk.tracker.objects.WLT;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -41,6 +42,7 @@ public class BTEntityListener implements Listener{
 	ConcurrentHashMap<String,Long> lastDamageTime = new ConcurrentHashMap<String,Long>();
 	ConcurrentHashMap<String,RampageStreak> lastKillTime = new ConcurrentHashMap<String,RampageStreak>();
 	static HashSet<String> ignoreEntities = new HashSet<String>();
+	static HashSet<UUID> ignoreWorlds = new HashSet<UUID>();
 
 	Random r = new Random();
 	TrackerInterface playerTi;
@@ -77,6 +79,8 @@ public class BTEntityListener implements Listener{
 	}
 
 	private void ede(EntityDeathEvent event) {
+		if (ignoreWorlds.contains(event.getEntity().getWorld().getUID()))
+			return;
 		String target, killer;
 		boolean targetPlayer = false, killerPlayer = false;
 		boolean isMelee = true;
@@ -294,5 +298,16 @@ public class BTEntityListener implements Listener{
 		ignoreEntities.clear();
 		if (list != null)
 			ignoreEntities.addAll(list);
+	}
+
+	public static void setIgnoreWorlds(List<String> list) {
+		ignoreWorlds.clear();
+		if (list != null){
+			for (String s: list){
+				World w = Bukkit.getWorld(s);
+				if (w != null){
+					ignoreWorlds.add(w.getUID());}
+			}
+		}
 	}
 }

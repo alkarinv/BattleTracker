@@ -250,7 +250,7 @@ public class SQLInstance extends SQLSerializer{
 			case MAXRATING: case MAXRANKING: rscon = executeQuery(get_topx_maxelo,x); break;
 			case STREAK: rscon = executeQuery(get_topx_streak,x); break;
 			case MAXSTREAK: rscon = executeQuery(get_topx_maxstreak,x); break;
-			case WLRATIO: rscon = executeQuery(get_topx_kd,x); break;
+			case WLRATIO: case KDRATIO: rscon = executeQuery(get_topx_kd,x); break;
 			default:
 			}
 		} else {
@@ -262,7 +262,7 @@ public class SQLInstance extends SQLSerializer{
 			case MAXRATING: case MAXRANKING: rscon = executeQuery(get_topx_maxelo_tc,teamcount,x); break;
 			case STREAK: rscon = executeQuery(get_topx_streak_tc,teamcount,x); break;
 			case MAXSTREAK: rscon = executeQuery(get_topx_maxstreak_tc,teamcount,x); break;
-			case WLRATIO: rscon = executeQuery(get_topx_kd_tc,teamcount,x); break;
+			case WLRATIO: case KDRATIO: rscon = executeQuery(get_topx_kd_tc,teamcount,x); break;
 			default:
 			}
 		}

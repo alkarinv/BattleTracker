@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.tracker.Tracker;
@@ -75,7 +77,6 @@ public class SignController {
 
 		for (TrackerInterface ti : interfaces){
 			final String tiName = ti.getInterfaceName().toUpperCase();
-
 			for (String loc : map.keySet()){
 				StatSign ss = map.get(loc);
 				if (!ss.getDBName().toUpperCase().equals(tiName)){
@@ -125,12 +126,13 @@ public class SignController {
 		});
 		/// Get the max length we need to query in the database for each stattype
 		/// Once we have found the max, do an async update for the statsigns
-		List<Stat> stats = new ArrayList<Stat>();
 		StatType ost = statsigns.get(0).getStatType();
 		StatType st = statsigns.get(0).getStatType();
+		List<Stat> stats = new ArrayList<Stat>();
 		List<StatSign> update = new ArrayList<StatSign>();
 		int max = 0;
-		boolean signsModified = ti.isModified();
+//		boolean signsModified = ti.isModified();
+		boolean signsModified = true; /// trying to fix the update issue
 		boolean hasChange = signsModified;
 		int offset = 0;
 		for (StatSign ss: statsigns){
@@ -238,17 +240,18 @@ public class SignController {
 
 
 	private void updateSigns(final TrackerInterface ti,
-			final List<StatSign> update, final int max, final StatType type, int offset) {
-		Bukkit.getScheduler().scheduleAsyncDelayedTask(Tracker.getSelf(), new Runnable(){
+			final List<StatSign> update, final int max, final StatType type, final int offset) {
+		new Timer().schedule(new TimerTask(){
 			@Override
 			public void run() {
 				List<Stat> toplist= ti.getTopX(type, max * 4);
+
 				if (toplist != null && !toplist.isEmpty()){
 					Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(),
 							new UpdateSigns(ti.getInterfaceName(), update,toplist));
 				}
 			}
-		},5L*offset);
+		}, 250L*offset);
 	}
 
 	class UpdateSigns implements Runnable{
@@ -290,9 +293,9 @@ public class SignController {
 							break;
 						}
 						int val = (int) statList.get(curTop).getStat(ss.getStatType());
-						String statLine = formatStatLine(
-								statList.get(curTop).getName(), val, curTop);
-						s.setLine(j, statLine+"         ");
+						String statLine = formatStatLine(statList.get(curTop).getName(), val, curTop);
+						if (!s.getLine(j).equals(statLine))
+							s.setLine(j, statLine+"         ");
 						curTop++;
 					}
 					s.update(true);
@@ -303,7 +306,7 @@ public class SignController {
 		private String formatStatLine(String name, int val, int curTop) {
 			StringBuilder sb = new StringBuilder();
 			String sval = val +"";
-			int length = ((curTop+1)+"").length() + sval.length() + 1; // 1 delimiters
+			int length = intStringLength(curTop+1) + sval.length() + 1; // 1 delimiters
 			if (name.length() + length > 16){
 				name = name.substring(0, Math.min(name.length(), length));
 			}
@@ -311,6 +314,10 @@ public class SignController {
 			sb.append((curTop+1)+"."+ name+ spacing +sval);
 			return sb.toString();
 		}
+	}
+
+	public static int intStringLength(int i) {
+		return i==0 ? (1) : (i<0) ? (int)Math.log10(Math.abs(i))+2 : (int)Math.log10(i)+1;
 	}
 
 	private boolean breakLine(String line) {
@@ -373,8 +380,7 @@ public class SignController {
 		lines[0] = "&eYour Stats";
 		lines[1] = "[&6"+stat.getRating() +"&0]";
 		int l = (stat.getWins() +"/" + stat.getLosses()).length();
-		lines[2] = l <= 10 ?
-			"&2"+stat.getWins() +"&0/&4" + stat.getLosses() :
+		lines[2] = l <= 10 ? "&2"+stat.getWins() +"&0/&4" + stat.getLosses() :
 			stat.getWins() +"/" + stat.getLosses();
 		if (lines[2].length() <= 12)
 			lines[2] = "W/L " + lines[2];
@@ -384,6 +390,7 @@ public class SignController {
 		}
 		SignUtil.sendLines(player, s, lines);
 	}
+
 	public void clearSigns() {
 		topSigns.clear();
 		personalSigns.clear();

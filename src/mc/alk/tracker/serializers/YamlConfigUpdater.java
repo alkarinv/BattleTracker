@@ -24,6 +24,9 @@ public class YamlConfigUpdater {
 			newVersion = new Version("1.0.1");
 			if (curVersion.compareTo(newVersion) < 0){
 				curVersion = updateTo1Point01(configFile,backupDir, curVersion, newVersion);}
+			newVersion = new Version("1.0.2");
+			if (curVersion.compareTo(newVersion) < 0){
+				curVersion = updateTo1Point02(configFile,backupDir, curVersion, newVersion);}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
@@ -53,6 +56,15 @@ public class YamlConfigUpdater {
 		fu.addAfter(".*ignoreEntities:.*", "",
 				"### Should we even use leaderboard signs?",
 				"allowLeaderboardSigns: true");
+		return fu.update();
+	}
+
+	private Version updateTo1Point02(File oldFile, File backupDir, Version newVersion, Version oldVersion) throws IOException {
+		FileUpdater fu = new FileUpdater(oldFile,backupDir,newVersion,oldVersion);
+		fu.replace(".*version:.*", "version: 1.0.2");
+		fu.addAfter(".*ignoreEntities:.*", "",
+				"### ignore the following worlds",
+				"ignoreWorlds: []");
 		return fu.update();
 	}
 }

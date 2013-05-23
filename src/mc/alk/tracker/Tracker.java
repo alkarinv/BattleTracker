@@ -105,7 +105,7 @@ public class Tracker extends MCPlugin{
 				public void run() {
 					signController.updateSigns();
 				}
-			}, 20, 1000);
+			}, 20, 40);
 		}
 	}
 
