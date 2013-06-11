@@ -10,7 +10,7 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.util.TimeUtil;
-import mc.alk.v1r5.executors.CustomCommandExecutor;
+import mc.alk.v1r6.executors.CustomCommandExecutor;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;

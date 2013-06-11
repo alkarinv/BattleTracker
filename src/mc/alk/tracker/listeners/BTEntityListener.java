@@ -16,6 +16,7 @@ import mc.alk.tracker.controllers.TrackerController;
 import mc.alk.tracker.objects.SpecialType;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.WLT;
+import mc.alk.v1r6.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -79,6 +80,7 @@ public class BTEntityListener implements Listener{
 	}
 
 	private void ede(EntityDeathEvent event) {
+		Log.debug("BT EntityDeathEvent Debugging ignoreworld = " + (ignoreWorlds.contains(event.getEntity().getWorld().getUID())));
 		if (ignoreWorlds.contains(event.getEntity().getWorld().getUID()))
 			return;
 		String target, killer;

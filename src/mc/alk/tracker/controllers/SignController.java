@@ -19,7 +19,7 @@ import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.util.SignUtil;
-import mc.alk.v1r5.util.SerializerUtil;
+import mc.alk.v1r6.util.SerializerUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -246,7 +246,7 @@ public class SignController {
 			public void run() {
 				List<Stat> toplist= ti.getTopX(type, max * 4);
 
-				if (toplist != null && !toplist.isEmpty()){
+				if (toplist != null && !toplist.isEmpty() && Tracker.getSelf().isEnabled()){
 					Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(),
 							new UpdateSigns(ti.getInterfaceName(), update,toplist));
 				}

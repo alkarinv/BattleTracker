@@ -11,7 +11,7 @@ import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.ranking.RatingCalculator;
-import mc.alk.v1r5.core.Version;
+import mc.alk.v1r6.core.Version;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -46,13 +46,13 @@ public interface TrackerInterface{
 	public boolean hidePlayer(String player, boolean hide);
 
 	/**
-	 * Stop tracking stats and don't display kill messages for this player
+	 * Stop tracking stats
 	 * @param playerName
 	 */
 	public void stopTracking(String playerName);
 
 	/**
-	 * Resume tracking stats and resume kill messages for this player
+	 * Resume tracking stats
 	 * @param playerName
 	 */
 	public void resumeTracking(String playerName);
@@ -69,15 +69,16 @@ public interface TrackerInterface{
 	public void resumeMessages(String playerName);
 
 	/**
-	 * Stop tracking stats and don't display kill messages for this player
+	 * Stop tracking stats
 	 * @param player
 	 */
 	public void stopTracking(OfflinePlayer player);
 	/**
-	 * Resume tracking stats and resume kill messages for this player
+	 * Resume tracking stats
 	 * @param player
 	 */
 	public void resumeTracking(OfflinePlayer player);
+
 	/**
 	 * Stop displaying kill messages for this player
 	 * @param player

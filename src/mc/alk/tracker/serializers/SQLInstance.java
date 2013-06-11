@@ -21,8 +21,8 @@ import mc.alk.tracker.objects.VersusRecords;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
-import mc.alk.v1r5.serializers.SQLSerializer;
-import mc.alk.v1r5.util.Log;
+import mc.alk.v1r6.serializers.SQLSerializer;
+import mc.alk.v1r6.util.Log;
 
 
 public class SQLInstance extends SQLSerializer{
@@ -137,7 +137,7 @@ public class SQLInstance extends SQLSerializer{
 
 		get_topx_wins = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+WINS+" DESC LIMIT ? ";
 		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+LOSSES+" DESC LIMIT ? ";
-		get_topx_losses = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+TIES+" DESC LIMIT ? ";
+		get_topx_ties = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+TIES+" DESC LIMIT ? ";
 		get_topx_streak = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+STREAK +" DESC LIMIT ? ";
 		get_topx_maxstreak = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+MAXSTREAK +" DESC LIMIT ? ";
 		get_topx_elo = "select * from "+OVERALL_TABLE +" WHERE "+FLAGS+" & 1 <> 1 ORDER BY "+ELO+" DESC LIMIT ? ";
@@ -146,7 +146,7 @@ public class SQLInstance extends SQLSerializer{
 
 		get_topx_wins_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+WINS+" DESC LIMIT ? ";
 		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+LOSSES+" DESC LIMIT ? ";
-		get_topx_losses_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+TIES+" DESC LIMIT ? ";
+		get_topx_ties_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+TIES+" DESC LIMIT ? ";
 		get_topx_streak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+STREAK +" DESC LIMIT ? ";
 		get_topx_maxstreak_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+MAXSTREAK +" DESC LIMIT ? ";
 		get_topx_elo_tc = "select * from "+OVERALL_TABLE +" WHERE "+COUNT+"=? AND "+FLAGS+" & 1 <> 1 ORDER BY "+ELO+" DESC LIMIT ? ";

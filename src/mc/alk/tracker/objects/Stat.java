@@ -12,7 +12,7 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.ranking.EloCalculator;
 import mc.alk.tracker.util.Cache.CacheObject;
 import mc.alk.tracker.util.Util;
-import mc.alk.v1r5.util.Log;
+import mc.alk.v1r6.util.Log;
 
 import org.bukkit.entity.Player;
 

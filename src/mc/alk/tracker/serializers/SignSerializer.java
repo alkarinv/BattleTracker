@@ -6,8 +6,8 @@ import java.util.Map;
 
 import mc.alk.tracker.controllers.SignController;
 import mc.alk.tracker.objects.StatSign;
-import mc.alk.v1r5.serializers.BaseConfig;
-import mc.alk.v1r5.util.SerializerUtil;
+import mc.alk.v1r6.serializers.BaseConfig;
+import mc.alk.v1r6.util.SerializerUtil;
 
 import org.bukkit.Location;
 import org.bukkit.Material;

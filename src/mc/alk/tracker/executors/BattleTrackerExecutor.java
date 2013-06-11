@@ -4,7 +4,7 @@ import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.objects.StatType;
-import mc.alk.v1r5.executors.CustomCommandExecutor;
+import mc.alk.v1r6.executors.CustomCommandExecutor;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;

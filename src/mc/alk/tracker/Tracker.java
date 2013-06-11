@@ -21,8 +21,8 @@ import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.serializers.SignSerializer;
 import mc.alk.tracker.serializers.YamlConfigUpdater;
 import mc.alk.tracker.serializers.YamlMessageUpdater;
-import mc.alk.v1r5.core.MCPlugin;
-import mc.alk.v1r5.core.Version;
+import mc.alk.v1r6.core.MCPlugin;
+import mc.alk.v1r6.core.Version;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -105,7 +105,7 @@ public class Tracker extends MCPlugin{
 				public void run() {
 					signController.updateSigns();
 				}
-			}, 20, 40);
+			}, 20, 1000);
 		}
 	}
 

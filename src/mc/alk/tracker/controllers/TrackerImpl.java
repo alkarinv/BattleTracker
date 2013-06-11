@@ -27,8 +27,8 @@ import mc.alk.tracker.ranking.RatingCalculator;
 import mc.alk.tracker.serializers.SQLInstance;
 import mc.alk.tracker.util.Cache;
 import mc.alk.tracker.util.Cache.CacheSerializer;
-import mc.alk.v1r5.core.Version;
-import mc.alk.v1r5.serializers.SQLSerializerConfig;
+import mc.alk.v1r6.core.Version;
+import mc.alk.v1r6.serializers.SQLSerializerConfig;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.bukkit.ChatColor;
