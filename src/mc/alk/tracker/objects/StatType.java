@@ -36,6 +36,7 @@ public enum StatType {
 		}
 		return gt;
 	}
+
 	public ChatColor color(){
 		switch(this){
 		case WLRATIO:
@@ -48,7 +49,6 @@ public enum StatType {
 		case LOSSES:
 			return ChatColor.DARK_RED;
 		case MAXRANKING:
-			return ChatColor.GOLD;
 		case MAXRATING:
 			return ChatColor.GOLD;
 		case RANKING:

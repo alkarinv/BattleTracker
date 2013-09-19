@@ -8,7 +8,7 @@ import mc.alk.tracker.objects.SignType;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.exceptions.InvalidSignException;
-import mc.alk.v1r6.util.AutoClearingTimer;
+import mc.alk.v1r7.util.AutoClearingTimer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

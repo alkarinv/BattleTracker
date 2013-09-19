@@ -21,7 +21,7 @@
 # &d  Pink
 # &e  Yellow
 # &f  White
-version: 1.0
+version: 1.0.1
 pve:
   prefix: "&e[PvE]&f "
   meleeDeaths:
@@ -128,6 +128,9 @@ pvp:
   rangeDeaths:
     - "&6%k&f has riddled &6%d&f with arrows!"
     - "With a well aimed shot &6%k&f punctured &6%d&f's heart!"
+  bow:
+    - '&6%k&f feathered &6%d&f with arrows!'
+    - '&6%k&f's arrow pierced through &6%d&f!'
   air:
     - "&6%k&f pummeled &6%d&f with their bare hands!"
     - "&6%d&f was no match for the combat skills of &6%k&f"

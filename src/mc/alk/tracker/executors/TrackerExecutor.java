@@ -10,7 +10,7 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.util.TimeUtil;
-import mc.alk.v1r6.executors.CustomCommandExecutor;
+import mc.alk.v1r7.executors.CustomCommandExecutor;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -42,7 +42,7 @@ public class TrackerExecutor extends CustomCommandExecutor {
 		if (x<=0 || x > 100){
 			return sendMessage(sender,MessageController.getMsg("xBetween", MAX_RECORDS));}
 		List<Stat> stats = st == null ? ti.getTopXRating(x) : ti.getTopX(st, x);
-		String stname = st == null ? "Ranking" : st.getName();
+		String stname = st == null ? "Rating" : st.getName();
 		int min = Math.min(x, stats.size());
 		if (min==0){
 			return sendMessage(sender,MessageController.getMsg("noRecordsInTable", ti.getInterfaceName()));}

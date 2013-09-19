@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import mc.alk.tracker.Tracker;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 
@@ -20,10 +23,60 @@ public class TrackerController {
 		return dontTrack.contains(target);
 	}
 
-	public static void stopTracking(String playername){dontTrack.add(playername);}
-	public static void resumeTracking(String playername){dontTrack.remove(playername);}
-	public static void stopAnnouncing(String playername){dontAnnounce.add(playername);}
-	public static void resumeAnnouncing(String playername){dontAnnounce.remove(playername);}
+	public static void stopTracking(final String playername,boolean now){
+		if (now) {
+			dontTrack.add(playername);
+		} else {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					dontTrack.add(playername);
+				}
+			});
+		}
+	}
+	public static void resumeTracking(final String playername,boolean now){
+		if (now) {
+			dontTrack.remove(playername);
+		} else {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					dontTrack.remove(playername);
+				}
+			});
+		}
+	}
+	public static void stopAnnouncing(final String playername,boolean now){
+		if (now) {
+			dontAnnounce.add(playername);
+		} else {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					dontAnnounce.add(playername);
+				}
+			});
+		}
+	}
+
+	public static void resumeAnnouncing(final String playername,boolean now){
+		if (now) {
+			dontAnnounce.remove(playername);
+		} else {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					dontAnnounce.remove(playername);
+				}
+			});
+		}
+	}
+
+	public static void stopTracking(String playername){stopTracking(playername,false);}
+	public static void resumeTracking(String playername){resumeTracking(playername,false);}
+	public static void stopAnnouncing(String playername){stopAnnouncing(playername,false);}
+	public static void resumeAnnouncing(String playername){resumeAnnouncing(playername,false);}
 
 
 	public static void stopAnnouncing(Collection<Player> players) {for (Player p:players)dontAnnounce.add(p.getName());}

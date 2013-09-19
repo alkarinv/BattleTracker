@@ -1,6 +1,5 @@
 package mc.alk.tracker.serializers;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -21,13 +20,11 @@ import mc.alk.tracker.objects.VersusRecords;
 import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
-import mc.alk.v1r6.serializers.SQLSerializer;
-import mc.alk.v1r6.util.Log;
+import mc.alk.v1r7.serializers.SQLSerializer;
+import mc.alk.v1r7.util.Log;
 
 
 public class SQLInstance extends SQLSerializer{
-
-
 	public static final int TEAM_ID_LENGTH = 32;
 	public static final int TEAM_NAME_LENGTH = 48;
 	static public String URL = "localhost";
@@ -159,7 +156,6 @@ public class SQLInstance extends SQLSerializer{
 
 		getx_versus_records = "select * from "+INDIVIDUAL_TABLE+" WHERE ("+ID1+"=? AND "+ID2+"=?) OR ("+ID1+"=? AND "+ID2+"=?) ORDER BY "+DATE+" DESC LIMIT ?";
 
-		truncate_all_tables = "truncate table " +OVERALL_TABLE+"; truncate table " + VERSUS_TABLE+"; truncate table "+INDIVIDUAL_TABLE;
 
 		get_rank = "select  count(*) from "+OVERALL_TABLE+" where "+ELO+" > ? and "+COUNT+"=?";
 
@@ -191,6 +187,7 @@ public class SQLInstance extends SQLSerializer{
 
 			save_ind_record = "insert ignore into "+INDIVIDUAL_TABLE+" VALUES(?,?,?,?)";
 			save_members = "insert ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
+			truncate_all_tables = "truncate table " +OVERALL_TABLE+"; truncate table " + VERSUS_TABLE+"; truncate table "+INDIVIDUAL_TABLE;
 
 			break;
 		case SQLITE:
@@ -216,26 +213,24 @@ public class SQLInstance extends SQLSerializer{
 			//					"(select "+COUNT+" from "+OVERALL_TABLE+" where "+TEAMID+"=?))";
 
 			save_members = "insert or ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
+			truncate_all_tables = "drop table " +OVERALL_TABLE+"; drop table " + VERSUS_TABLE+"; drop table "+INDIVIDUAL_TABLE;
+
 		}
 		if (shouldUpdateTo1point0()){
 			updateTo1Point0();
 		}
 		try {
-			Connection con = getConnection();  /// Our database connection
+			createTable(VERSUS_TABLE, create_versus_table, create_versus_table_idx);
 
-			createTable(con, VERSUS_TABLE, create_versus_table, create_versus_table_idx);
-			createTable(con, OVERALL_TABLE, create_overall_table);
-			createTable(con, INDIVIDUAL_TABLE,create_individual_table,create_individual_table_idx);
-			createTable(con, MEMBER_TABLE,create_member_table,create_member_table_idx);
-
-			closeConnection(con);
+			createTable(OVERALL_TABLE, create_overall_table);
+			createTable(INDIVIDUAL_TABLE,create_individual_table,create_individual_table_idx);
+			createTable(MEMBER_TABLE,create_member_table,create_member_table_idx);
 		} catch (Exception e){
 			e.printStackTrace();
 			return false;
 		}
 		return true;
 	}
-
 
 	public List<Stat> getTopX(StatType statType, int x, Integer teamcount) {
 		if (x <= 0){
@@ -282,7 +277,7 @@ public class SQLInstance extends SQLSerializer{
 		try {
 			ResultSet rs = rscon.rs;
 			while (rs.next()){
-				Stat s = createStat(rs);
+				Stat s = createStat(rscon);
 				if (s != null)
 					stats.add(s);
 			}
@@ -300,7 +295,7 @@ public class SQLInstance extends SQLSerializer{
 			ResultSet rs = rscon.rs;
 			//			System.out.println("rscon & rs " + rscon +"  " + rs);
 			while (rs.next()){
-				return createStat(rs);
+				return createStat(rscon);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -310,7 +305,8 @@ public class SQLInstance extends SQLSerializer{
 		return null;
 	}
 
-	private Stat createStat(ResultSet rs) throws SQLException{
+	private Stat createStat(RSCon rscon) throws SQLException{
+		ResultSet rs = rscon.rs;
 		Stat ts = null;
 		String id = rs.getString(TEAMID);
 		String name= rs.getString(NAME);
@@ -334,14 +330,18 @@ public class SQLInstance extends SQLSerializer{
 		try {nid = Integer.valueOf(id);} catch (NumberFormatException nfe){}
 		if (nid != null && ts instanceof TeamStat){
 			HashSet<String> players = new HashSet<String>();
-			RSCon rscon2 = executeQuery(get_members, id);
-			ResultSet rs2 = rscon2.rs;
-			while (rs2.next()){
-				System.out.println("Loading member=" + rs2.getString(NAME));
-				players.add(rs2.getString(NAME));
-			}
+			RSCon rscon2 = null;
+			try{
+				rscon2 = executeQuery(rscon.con, true, TIMEOUT, get_members, id);
+				ResultSet rs2 = rscon2.rs;
+				while (rs2.next()){
+					players.add(rs2.getString(NAME));
+				}
 
-			((TeamStat)ts).setMembers(players);
+				((TeamStat)ts).setMembers(players);
+			} finally{
+				closeConnection(rscon2);
+			}
 		} else {
 		}
 		ts.setWins(kills);
@@ -452,7 +452,6 @@ public class SQLInstance extends SQLSerializer{
 			for (Stat stat: stats){
 				Log.err(" Possible failed stat = " + stat);
 			}
-
 		}
 	}
 
@@ -560,12 +559,26 @@ public class SQLInstance extends SQLSerializer{
 	}
 
 	public void deleteTables(){
-		this.executeQuery(truncate_all_tables);
+		switch (this.getType()){
+		case MYSQL:
+			this.executeUpdate("truncate table " +OVERALL_TABLE);
+			this.executeUpdate("truncate table " +VERSUS_TABLE);
+			this.executeUpdate("truncate table " +INDIVIDUAL_TABLE);
+			break;
+		case SQLITE:
+			this.executeUpdate(truncate_all_tables);
+			/// For SQLite, need to drop the tables and recreate them
+			init();
+			break;
+		default:
+			break;
+		}
 	}
 
 	public int getRecordCount() {
 		return getInteger("select count(*) from " + INDIVIDUAL_TABLE);
 	}
+
 	public boolean shouldUpdateTo1point0() {
 		return hasTable(OVERALL_TABLE) && !hasColumn(OVERALL_TABLE,FLAGS);
 	}

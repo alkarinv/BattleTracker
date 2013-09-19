@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleTracker</artifactId>
     <packaging>jar</packaging>
-    <version>2.5.3.8</version>
+    <version>2.5.6.2</version>
     <name>BattleTracker</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -12,10 +12,14 @@
     <url>http://maven.apache.org</url>
     <!-- Locations for jar repositories -->
     <repositories>
-        <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public</url>
-        </repository>
+      <repository>
+        <id>bukkit-repo</id>
+        <url>http://repo.bukkit.org/content/groups/public</url>
+      </repository>
+      <repository>
+        <id>battleplugins-repo</id>
+        <url>http://server.battleplugins.com/maven/repository</url>
+      </repository>
     </repositories>
     <!-- Dependencies -->
     <dependencies>
@@ -23,13 +27,13 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.4.7-R1.0</version>
+            <version>1.6.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleCore</artifactId>
-            <version>[1.5,)</version>
+            <version>[1.7,)</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -41,7 +45,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleBukkitLib</artifactId>
-            <version>[1.0.1,)</version>
+            <version>[1.0.2,)</version>
             <scope>compile</scope>
         </dependency>
         
@@ -49,7 +53,7 @@
         <dependency>
             <groupId>unknown.plugins</groupId>
             <artifactId>Herochat</artifactId>
-            <version>[5.6.5,)</version>
+            <version>5.6.6</version>
             <scope>provided</scope>
         </dependency>
         
@@ -60,7 +64,7 @@
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ftp</artifactId>
+                <artifactId>wagon-ssh</artifactId>
                 <version>2.4</version>
             </extension>
         </extensions>
@@ -119,8 +123,8 @@
     </build>
     <distributionManagement>
         <repository>
-            <id>battleplugins-repo</id>
-            <url>ftp://ftp.battleplugins.com/public_html/battleplugins/maven/</url>
+            <id>battleplugins-repo</id>           
+            <url>scp://server.battleplugins.com/var/www/maven/repository</url>
         </repository>
     </distributionManagement>
 </project>

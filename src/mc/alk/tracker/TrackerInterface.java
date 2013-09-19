@@ -11,7 +11,7 @@ import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.ranking.RatingCalculator;
-import mc.alk.v1r6.core.Version;
+import mc.alk.v1r7.core.Version;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -110,15 +110,25 @@ public interface TrackerInterface{
 
 	public List<Stat> getTopX(StatType statType, int x);
 
-	@Deprecated
-	public List<Stat> getTopXRanking(int x);
+	/**
+	 * Returns the top x players in rating
+	 */
 	public List<Stat> getTopXRating(int x);
+	/**
+	 * Returns the top x players in losses
+	 */
 	public List<Stat> getTopXLosses(int x);
+	/**
+	 * Returns the top x players in wins
+	 */
 	public List<Stat> getTopXWins(int x);
+	/**
+	 * Returns the top x players in k/d ratio
+	 */
 	public List<Stat> getTopXKDRatio(int x);
 
 	public List<Stat> getTopX(StatType statType, int x, Integer teamSize);
-	public List<Stat> getTopXRanking(int x, Integer teamSize);
+	public List<Stat> getTopXRating(int x, Integer teamSize);
 	public List<Stat> getTopXLosses(int x, Integer teamSize);
 	public List<Stat> getTopXWins(int x, Integer teamSize);
 	public List<Stat> getTopXKDRatio(int x, Integer teamSize);
@@ -221,6 +231,7 @@ public interface TrackerInterface{
 	 * @return
 	 */
 	public Version getVersion();
+
 	public List<WLTRecord> getWinsSince(Stat stat, Long time);
 
 	/**

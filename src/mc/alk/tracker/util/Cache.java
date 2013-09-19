@@ -128,6 +128,10 @@ public class Cache <Key, Value> {
 		return (Value) o.v;
 	}
 
+	public boolean contains(UniqueKey<Key> obj){
+		return map.containsKey(obj.getKey());
+	}
+
 	public UniqueKey<Key> put(UniqueKey<Key> obj) {
 		CacheElement o = new CacheElement(obj);
 		final Key key = obj.getKey();

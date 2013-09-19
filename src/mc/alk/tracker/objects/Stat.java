@@ -12,7 +12,7 @@ import mc.alk.tracker.objects.VersusRecords.VersusRecord;
 import mc.alk.tracker.ranking.EloCalculator;
 import mc.alk.tracker.util.Cache.CacheObject;
 import mc.alk.tracker.util.Util;
-import mc.alk.v1r6.util.Log;
+import mc.alk.v1r7.util.Log;
 
 import org.bukkit.entity.Player;
 
@@ -95,12 +95,6 @@ public abstract class Stat extends CacheObject<String,Stat>{
 
 	public int getRating() {return (int) rating;}
 	public int getMaxRating() {return (int) maxRating;}
-
-	@Deprecated
-	public int getRanking() {return (int) rating;}
-
-	@Deprecated
-	public int getMaxRanking() {return (int) maxRating;}
 
 	public void setRating(float rating){
 		this.rating = rating;

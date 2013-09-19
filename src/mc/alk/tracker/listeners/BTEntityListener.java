@@ -16,7 +16,6 @@ import mc.alk.tracker.controllers.TrackerController;
 import mc.alk.tracker.objects.SpecialType;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.WLT;
-import mc.alk.v1r6.util.Log;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -63,12 +62,12 @@ public class BTEntityListener implements Listener{
 		plugin = Tracker.getSelf();
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		ede(event);
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDeath(EntityDeathEvent event) {
 		if (event instanceof PlayerDeathEvent)
 			return;
@@ -80,7 +79,6 @@ public class BTEntityListener implements Listener{
 	}
 
 	private void ede(EntityDeathEvent event) {
-		Log.debug("BT EntityDeathEvent Debugging ignoreworld = " + (ignoreWorlds.contains(event.getEntity().getWorld().getUID())));
 		if (ignoreWorlds.contains(event.getEntity().getWorld().getUID()))
 			return;
 		String target, killer;
@@ -125,6 +123,7 @@ public class BTEntityListener implements Listener{
 					killerPlayer = true;
 					killerEntity = (Player) proj.getShooter();
 					killer = killerEntity.getName();
+					killingWeapon = killerEntity.getItemInHand();
 				} else if (proj.getShooter() != null){ /// projectile shot by some mob, or other source
 					killer = proj.getShooter().getType().getName();
 				} else {

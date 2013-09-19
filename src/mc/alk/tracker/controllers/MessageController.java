@@ -7,7 +7,7 @@ import java.util.Random;
 
 import mc.alk.tracker.objects.SpecialType;
 import mc.alk.util.InventoryUtil;
-import mc.alk.v1r6.controllers.MC;
+import mc.alk.v1r7.controllers.MC;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
@@ -173,7 +173,7 @@ public class MessageController {
 		try{
 			if (killer != null) msg = StringUtils.replace(msg,"%k",killer);
 			if (target != null) msg = StringUtils.replace(msg,"%d",target);
-			if (item != null) msg = StringUtils.replace(msg,"%i",item);
+			if (item != null) msg = StringUtils.replace(msg,"%i",item.replace('_',' '));
 			if (times != null) msg = StringUtils.replace(msg,"%n",times);
 		} catch(Exception e){
 			System.err.println("Error getting message "+msg);

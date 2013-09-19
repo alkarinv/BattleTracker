@@ -21,8 +21,8 @@ import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.serializers.SignSerializer;
 import mc.alk.tracker.serializers.YamlConfigUpdater;
 import mc.alk.tracker.serializers.YamlMessageUpdater;
-import mc.alk.v1r6.core.MCPlugin;
-import mc.alk.v1r6.core.Version;
+import mc.alk.v1r7.core.MCPlugin;
+import mc.alk.v1r7.core.Version;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -43,8 +43,9 @@ public class Tracker extends MCPlugin{
 		plugin.setEnabled(true);
 		createPluginFolder();
 		loadConfigs();
-		getServer().getPluginManager().registerEvents(new BTEntityListener(), this);
-		getServer().getPluginManager().registerEvents(new BTPluginListener(), this);
+
+		Bukkit.getPluginManager().registerEvents(new BTEntityListener(), this);
+		Bukkit.getPluginManager().registerEvents(new BTPluginListener(), this);
 
 		getCommand("battleTracker").setExecutor(new BattleTrackerExecutor());
 		getCommand("btpvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
@@ -56,6 +57,7 @@ public class Tracker extends MCPlugin{
 	@Override
 	public void onDisable(){
 		plugin.setEnabled(false);
+
 		saveConfig();
 	}
 	@Override

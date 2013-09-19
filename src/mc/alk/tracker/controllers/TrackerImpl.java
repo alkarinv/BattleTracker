@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +16,7 @@ import mc.alk.tracker.TrackerInterface;
 import mc.alk.tracker.TrackerOptions;
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
+import mc.alk.tracker.objects.StatChange;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.tracker.objects.TeamStat;
 import mc.alk.tracker.objects.WLT;
@@ -27,10 +26,11 @@ import mc.alk.tracker.ranking.RatingCalculator;
 import mc.alk.tracker.serializers.SQLInstance;
 import mc.alk.tracker.util.Cache;
 import mc.alk.tracker.util.Cache.CacheSerializer;
-import mc.alk.v1r6.core.Version;
-import mc.alk.v1r6.serializers.SQLSerializerConfig;
+import mc.alk.v1r7.core.Version;
+import mc.alk.v1r7.serializers.SQLSerializerConfig;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -130,15 +130,31 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 
 	private void addStatRecord(final Stat team1, final Stat team2,
 			final WLT wlt, final boolean changeWinLossRecords){
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run() {
-				_addStatRecord(team1,team2,wlt,changeWinLossRecords);
-			}
-		}, 0);
+		if (cache.contains(team1) && cache.contains(team2)){
+			_addStatRecord(new StatChange(team1,team2,wlt,changeWinLossRecords));
+		} else {
+			Bukkit.getScheduler().scheduleAsyncDelayedTask(Tracker.getSelf(), new Runnable(){
+				@Override
+				public void run() {
+					_addStatRecord(new StatChange(team1,team2,wlt,changeWinLossRecords));
+				}
+			});
+		}
 	}
 
-	private void _addStatRecord(Stat team1, Stat team2, WLT wlt, boolean changeWinLossRecords){
+	class RecordHandler implements Runnable {
+		final StatChange sc;
+		RecordHandler(StatChange sc) {this.sc = sc; }
+		public void run() {
+			_addStatRecord(sc);
+		}
+	}
+
+	private void _addStatRecord(StatChange sc){
+		Stat team1 = sc.getTeam1();
+		Stat team2 = sc.getTeam2();
+		WLT wlt = sc.getWlt();
+		boolean changeWinLossRecords = sc.isChangeWinLossRecords();
 		/// Get our records
 		Stat ts1 = getRecord(team1);
 		Stat ts2 = getRecord(team2);
@@ -460,10 +476,10 @@ public class TrackerImpl implements TrackerInterface, CacheSerializer<String,Sta
 				case WINS: case KILLS: msg = m.replaceAll(stat.getWins()+""); break;
 				case LOSSES: case DEATHS: msg = m.replaceAll(stat.getLosses()+""); break;
 				case TIES: msg = m.replaceAll(stat.getTies()+""); break;
+				case RANKING:
 				case RATING: msg = m.replaceAll(stat.getRating()+""); break;
+				case MAXRANKING:
 				case MAXRATING: msg = m.replaceAll(stat.getMaxRating()+""); break;
-				case RANKING: msg = m.replaceAll(stat.getRating()+""); break;
-				case MAXRANKING: msg = m.replaceAll(stat.getMaxRating()+""); break;
 				case STREAK: msg = m.replaceAll(stat.getStreak()+""); break;
 				case MAXSTREAK: msg = m.replaceAll(stat.getMaxStreak()+""); break;
 				case WLRATIO: msg = m.replaceAll(stat.getKDRatio()+""); break;

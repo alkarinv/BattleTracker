@@ -9,8 +9,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import mc.alk.tracker.Tracker;
@@ -19,7 +17,7 @@ import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatSign;
 import mc.alk.tracker.objects.StatType;
 import mc.alk.util.SignUtil;
-import mc.alk.v1r6.util.SerializerUtil;
+import mc.alk.v1r7.util.SerializerUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -64,7 +62,7 @@ public class SignController {
 	}
 
 	public synchronized void updateSigns(){
-		if (updating)
+		if (updating || topSigns.isEmpty())
 			return;
 		updating = true;
 		final Map<String,StatSign> map;
@@ -96,7 +94,7 @@ public class SignController {
 				}
 			}
 			doTopSigns(ti,tops);
-			tops.clear();
+			tops = new ArrayList<StatSign>();
 		}
 		synchronized(topSigns){
 			for (String s: badSigns){
@@ -126,26 +124,22 @@ public class SignController {
 		});
 		/// Get the max length we need to query in the database for each stattype
 		/// Once we have found the max, do an async update for the statsigns
-		StatType ost = statsigns.get(0).getStatType();
 		StatType st = statsigns.get(0).getStatType();
 		List<Stat> stats = new ArrayList<Stat>();
 		List<StatSign> update = new ArrayList<StatSign>();
 		int max = 0;
-//		boolean signsModified = ti.isModified();
-		boolean signsModified = true; /// trying to fix the update issue
-		boolean hasChange = signsModified;
+
 		int offset = 0;
 		for (StatSign ss: statsigns){
 			if (ss.getStatType() != st){
 				/// Update signs
-				if (hasChange)
+				if (st != null)
 					updateSigns(ti,update,max, st,offset++);
 				/// Reset variables
 				st = ss.getStatType();
 				stats.clear();
 				update = new ArrayList<StatSign>();
 				max =0;
-				hasChange = signsModified;
 			}
 			update.add(ss);
 			/// If size != prevsize, they have added or removed signs, coutn as a change
@@ -153,12 +147,12 @@ public class SignController {
 			Integer prevSize = prevSignCount.get(ss.getLocationString());
 			if (prevSize == null || prevSize != size){
 				prevSignCount.put(ss.getLocationString(), size);
-				hasChange = true;
 			}
+
 			if (max  < size){
 				max = size;}
 		}
-		if (ost == st && hasChange){
+		if (!update.isEmpty() && st != null){
 			updateSigns(ti,update,max,st,offset++);}
 	}
 
@@ -241,17 +235,16 @@ public class SignController {
 
 	private void updateSigns(final TrackerInterface ti,
 			final List<StatSign> update, final int max, final StatType type, final int offset) {
-		new Timer().schedule(new TimerTask(){
+		Bukkit.getScheduler().scheduleAsyncDelayedTask(Tracker.getSelf(), new Runnable(){
 			@Override
 			public void run() {
 				List<Stat> toplist= ti.getTopX(type, max * 4);
-
 				if (toplist != null && !toplist.isEmpty() && Tracker.getSelf().isEnabled()){
 					Bukkit.getScheduler().scheduleSyncDelayedTask(Tracker.getSelf(),
 							new UpdateSigns(ti.getInterfaceName(), update,toplist));
 				}
 			}
-		}, 250L*offset);
+		},2L*offset);
 	}
 
 	class UpdateSigns implements Runnable{
