@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleTracker</artifactId>
     <packaging>jar</packaging>
-    <version>2.5.6.2</version>
+    <version>2.5.7</version>
     <name>BattleTracker</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>BattleBukkitLib</artifactId>
-            <version>[1.0.2,)</version>
+            <version>[1.0.3,)</version>
             <scope>compile</scope>
         </dependency>
         
@@ -124,7 +124,7 @@
     <distributionManagement>
         <repository>
             <id>battleplugins-repo</id>           
-            <url>scp://server.battleplugins.com/var/www/maven/repository</url>
+            <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven</url>
         </repository>
     </distributionManagement>
 </project>
