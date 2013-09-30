@@ -123,7 +123,9 @@ public class Tracker extends MCPlugin{
 				ti.flush();
 			}
 		}
-		signSerializer.saveAll();
+		/// can happen if tracker never loads properly (like starting and immediately stopping)
+		if (signSerializer != null)
+			signSerializer.saveAll();
 	}
 
 	public static TrackerInterface getPVPInterface(){

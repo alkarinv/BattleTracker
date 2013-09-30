@@ -61,6 +61,7 @@
     </dependencies>
     <!-- How we will compile the plugin -->
     <build>
+      <finalName>${project.name}</finalName>
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
@@ -124,7 +125,7 @@
     <distributionManagement>
         <repository>
             <id>battleplugins-repo</id>           
-            <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven</url>
+            <url>scp://server.battleplugins.com/var/www/server.battleplugins.com/htdocs/maven/repository</url>
         </repository>
     </distributionManagement>
 </project>
