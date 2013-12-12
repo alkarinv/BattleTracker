@@ -30,7 +30,6 @@ public class EloCalculator implements RatingCalculator {
 		final float p2elo = p2.getRating()-eloChange;
 		p1.setRating(p1elo > MIN_ELO? p1elo : MIN_ELO);
 		p2.setRating(p2elo > MIN_ELO? p2elo : MIN_ELO);
-		//				System.out.println(p1.getElo() + " : " + p2.getElo());
 	}
 
 	public void changeRatings(Stat ts1, Collection<Stat> teamstats, boolean tie) {

@@ -395,11 +395,9 @@ public class SQLInstance extends SQLSerializer{
 		if (DEBUG) System.out.println("SaveIndividual " + id);
 		List<List<Object>> batch = new ArrayList<List<Object>>();
 		for (String oid : indRecords.keySet()){
-			//			System.out.println("oid =" +oid);
 			HashSet<Timestamp> times = new HashSet<Timestamp>();
 
 			for (WLTRecord wlt: indRecords.get(oid)){
-				//				System.out.println("oid =  wlt = " +   wlt);
 				switch(wlt.wlt){
 				case LOSS: /// do nothing, let the winner do the saving
 					continue;
