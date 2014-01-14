@@ -3,8 +3,8 @@ package mc.alk.tracker.serializers;
 import java.io.File;
 import java.io.IOException;
 
-import mc.alk.plugin.updater.v1r2.FileUpdater;
-import mc.alk.plugin.updater.v1r2.Version;
+import mc.alk.plugin.updater.v1r3.FileUpdater;
+import mc.alk.plugin.updater.v1r3.Version;
 import mc.alk.tracker.Tracker;
 
 import org.bukkit.configuration.file.YamlConfiguration;
