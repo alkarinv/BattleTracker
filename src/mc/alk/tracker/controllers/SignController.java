@@ -1,5 +1,21 @@
 package mc.alk.tracker.controllers;
 
+import mc.alk.tracker.Tracker;
+import mc.alk.tracker.TrackerInterface;
+import mc.alk.tracker.objects.Stat;
+import mc.alk.tracker.objects.StatSign;
+import mc.alk.tracker.objects.StatType;
+import mc.alk.util.SignUtil;
+import mc.alk.v1r7.util.SerializerUtil;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,28 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import mc.alk.tracker.Tracker;
-import mc.alk.tracker.TrackerInterface;
-import mc.alk.tracker.objects.Stat;
-import mc.alk.tracker.objects.StatSign;
-import mc.alk.tracker.objects.StatType;
-import mc.alk.util.SignUtil;
-import mc.alk.v1r7.util.SerializerUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
-import org.bukkit.entity.Player;
-
 public class SignController {
-	Map<String,StatSign> personalSigns = new ConcurrentHashMap<String,StatSign>();
-	Map<String,StatSign> topSigns = new ConcurrentHashMap<String,StatSign>();
-	Map<String, Map<String,StatSign>> allSigns = new ConcurrentHashMap<String,Map<String,StatSign>>();
-	Map<String,Integer> prevSignCount = new ConcurrentHashMap<String,Integer>();
+	final Map<String,StatSign> personalSigns = new ConcurrentHashMap<String,StatSign>();
+	final Map<String,StatSign> topSigns = new ConcurrentHashMap<String,StatSign>();
+	final Map<String, Map<String,StatSign>> allSigns = new ConcurrentHashMap<String,Map<String,StatSign>>();
+	final Map<String,Integer> prevSignCount = new ConcurrentHashMap<String,Integer>();
 
 	boolean updating = false;
 	public SignController(){
@@ -106,8 +105,8 @@ public class SignController {
 
 	/**
 	 * For all of the signs of this type
-	 * @param ti
-	 * @param signs
+	 * @param ti TrackerInterface
+	 * @param statsigns List<StatSign>
 	 */
 	private void doTopSigns(TrackerInterface ti, List<StatSign> statsigns){
 		if (statsigns == null || statsigns.isEmpty())

@@ -29,5 +29,7 @@ public class Defaults {
 
 	public static final String ADMIN_PERM = "tracker.admin";
 
-	public static boolean USE_SIGNS = true;
+    public static boolean USE_SIGNS = true;
+
+    public static boolean AUTO_UPDATE = true;
 }

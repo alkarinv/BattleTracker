@@ -1,13 +1,12 @@
 package mc.alk.tracker.serializers;
 
+import mc.alk.plugin.updater.v1r4.FileUpdater;
+import mc.alk.plugin.updater.v1r4.Version;
+import mc.alk.tracker.Tracker;
+import org.bukkit.configuration.file.YamlConfiguration;
+
 import java.io.File;
 import java.io.IOException;
-
-import mc.alk.plugin.updater.v1r3.FileUpdater;
-import mc.alk.plugin.updater.v1r3.Version;
-import mc.alk.tracker.Tracker;
-
-import org.bukkit.configuration.file.YamlConfiguration;
 
 public class YamlConfigUpdater {
 
@@ -24,9 +23,12 @@ public class YamlConfigUpdater {
 			newVersion = new Version("1.0.1");
 			if (curVersion.compareTo(newVersion) < 0){
 				curVersion = updateTo1Point01(configFile,backupDir, curVersion, newVersion);}
-			newVersion = new Version("1.0.2");
-			if (curVersion.compareTo(newVersion) < 0){
-				curVersion = updateTo1Point02(configFile,backupDir, curVersion, newVersion);}
+            newVersion = new Version("1.0.2");
+            if (curVersion.compareTo(newVersion) < 0){
+                curVersion = updateTo1Point02(configFile,backupDir, curVersion, newVersion);}
+            newVersion = new Version("1.0.3");
+            if (curVersion.compareTo(newVersion) < 0){
+                curVersion = updateTo1Point03(configFile,backupDir, curVersion, newVersion);}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
@@ -67,4 +69,11 @@ public class YamlConfigUpdater {
 				"ignoreWorlds: []");
 		return fu.update();
 	}
+    private Version updateTo1Point03(File oldFile, File backupDir, Version newVersion, Version oldVersion) throws IOException {
+        FileUpdater fu = new FileUpdater(oldFile,backupDir,newVersion,oldVersion);
+        fu.replace(".*version:.*", "version: 1.0.3","");
+        fu.addBefore(".*showBukkitPVPMessages:.*", "",
+                "autoUpdate: true ## auto update to newer versions found on bukkit");
+        return fu.update();
+    }
 }

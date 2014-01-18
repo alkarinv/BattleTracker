@@ -1,11 +1,5 @@
 package mc.alk.tracker.listeners;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.Tracker;
 import mc.alk.tracker.TrackerInterface;
@@ -16,7 +10,6 @@ import mc.alk.tracker.controllers.TrackerController;
 import mc.alk.tracker.objects.SpecialType;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.WLT;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -34,6 +27,12 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class BTEntityListener implements Listener{
@@ -198,7 +197,7 @@ public class BTEntityListener implements Listener{
 				if (!Defaults.PVE_MESSAGES && !Defaults.BUKKIT_PVE_MESSAGES){
 					if (Defaults.INVOLVED_PVE_MESSAGES){
 						final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
-						String msg = getPvEDeathMessage(killer,target,isMelee,worldTi,wpn);
+						String msg = getPvEDeathMessage(killer,target,isMelee,wpn);
 						sendMessage(null,(Player) targetEntity,msg);
 					} else {
 						pde.setDeathMessage(null);
@@ -208,7 +207,7 @@ public class BTEntityListener implements Listener{
 
 				if (Defaults.PVE_MESSAGES){
 					final String wpn = killingWeapon != null ? killingWeapon.getType().name().toLowerCase() : null;
-					String msg = getPvEDeathMessage(killer,target,isMelee,worldTi,wpn);
+					String msg = getPvEDeathMessage(killer,target,isMelee,wpn);
 					sendMessage(pde,msg);
 				}
 				/// Else let bukkit handle
@@ -232,7 +231,6 @@ public class BTEntityListener implements Listener{
 
 		if (Defaults.RADIUS <= 0){
 			event.setDeathMessage(msg);
-			return;
 		} else {
 			Player player = event.getEntity();
 			if (player == null){
@@ -287,7 +285,7 @@ public class BTEntityListener implements Listener{
 		}
 	}
 
-	public String getPvEDeathMessage(String p1, String p2, boolean isMeleeDeath, TrackerInterface ti, String killingWeapon){
+	public String getPvEDeathMessage(String p1, String p2, boolean isMeleeDeath, String killingWeapon){
 		return MessageController.getPvEMessage(isMeleeDeath, p1, p2,killingWeapon);
 	}
 

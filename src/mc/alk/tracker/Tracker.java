@@ -1,11 +1,6 @@
 package mc.alk.tracker;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import mc.alk.plugin.updater.v1r4.PluginUpdater;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.SignController;
@@ -23,20 +18,27 @@ import mc.alk.tracker.serializers.YamlConfigUpdater;
 import mc.alk.tracker.serializers.YamlMessageUpdater;
 import mc.alk.v1r7.core.MCPlugin;
 import mc.alk.v1r7.core.Version;
-
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Tracker extends MCPlugin{
 	static Tracker plugin;
 	TrackerController sc;
-	static Map<String, TrackerInterface> interfaces = Collections.synchronizedMap(
+	final static Map<String, TrackerInterface> interfaces = Collections.synchronizedMap(
 			new ConcurrentHashMap<String,TrackerInterface>());
 	static SignController signController = new SignController();
 	SignSerializer signSerializer;
+    // The bukkit id for this project. https://api.curseforge.com/servermods/projects?search=battletracker
+    static final int bukkitId = 43688;
 
-	@Override
+    @Override
 	public void onEnable() {
 		super.onEnable();
 		plugin = this;
@@ -109,6 +111,7 @@ public class Tracker extends MCPlugin{
 				}
 			}, 20, 1000);
 		}
+        PluginUpdater.announceNewerAndDownloadIfNeeded(this, bukkitId, this.getFile(), Defaults.AUTO_UPDATE);
 	}
 
 	public static Tracker getSelf() {

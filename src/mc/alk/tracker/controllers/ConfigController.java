@@ -1,11 +1,10 @@
 package mc.alk.tracker.controllers;
 
-import java.io.File;
-
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.listeners.BTEntityListener;
-
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
 /**
  *
  * @author alkarin
@@ -41,7 +40,8 @@ public class ConfigController {
 		Defaults.MSG_TOP_HEADER = config.getString("topHeaderMsg",Defaults.MSG_TOP_HEADER);
 		Defaults.MSG_TOP_BODY = config.getString("topBodyMsg",Defaults.MSG_TOP_BODY);
 		Defaults.USE_SIGNS = config.getBoolean("useSigns",Defaults.USE_SIGNS);
-		BTEntityListener.setIgnoreEntities(config.getStringList("ignoreEntities"));
+        Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
+        BTEntityListener.setIgnoreEntities(config.getStringList("ignoreEntities"));
 		BTEntityListener.setIgnoreWorlds(config.getStringList("ignoreWorlds"));
 	}
 
