@@ -4,7 +4,7 @@
     <groupId>mc.alk</groupId>
     <artifactId>BattleTracker</artifactId>
     <packaging>jar</packaging>
-    <version>2.5.8.3</version>
+    <version>2.5.8.4</version>
     <name>BattleTracker</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>mc.alk</groupId>
             <artifactId>PluginUpdater</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.6.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -77,7 +77,7 @@
 
         <defaultGoal>install</defaultGoal>
         <!-- Where our source directory is -->
-        <sourceDirectory>${basedir}/src/mc</sourceDirectory>
+        <sourceDirectory>${basedir}/src/java</sourceDirectory>
         <!-- Include all the resources we need -->
         <resources>
             <resource>

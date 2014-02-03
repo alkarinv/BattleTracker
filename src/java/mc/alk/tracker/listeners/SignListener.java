@@ -34,7 +34,8 @@ public class SignListener implements Listener{
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		if (event.isCancelled()) return;
+		if (event.isCancelled() || event.getClickedBlock() == null)
+            return;
 		final Block block = event.getClickedBlock();
 		final Material type = block.getType();
 		if (!(type.equals(Material.SIGN) || type.equals(Material.SIGN_POST) || type.equals(Material.WALL_SIGN))) {
@@ -56,7 +57,6 @@ public class SignListener implements Listener{
 			},SECONDS*20);
 		}
 		signController.clickedSign(event.getPlayer(), (Sign) block.getState(), ss);
-		return;
 	}
 
 	@EventHandler
@@ -78,7 +78,7 @@ public class SignListener implements Listener{
 		final Material type = block.getType();
 		if (!(type.equals(Material.SIGN) || type.equals(Material.SIGN_POST) || type.equals(Material.WALL_SIGN))) {
 			return;}
-		StatSign ss = null;
+		StatSign ss;
 		try {
 			ss = getStatSign(block.getLocation(), event.getLines());
 		} catch (InvalidSignException e) {

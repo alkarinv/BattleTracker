@@ -1,7 +1,7 @@
 package mc.alk.tracker.serializers;
 
-import mc.alk.plugin.updater.v1r4.FileUpdater;
-import mc.alk.plugin.updater.v1r4.Version;
+import mc.alk.plugin.updater.v1r5.FileUpdater;
+import mc.alk.plugin.updater.v1r5.Version;
 import mc.alk.tracker.Tracker;
 import org.bukkit.configuration.file.YamlConfiguration;
 

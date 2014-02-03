@@ -150,7 +150,8 @@ public class BTEntityListener implements Listener{
 		}
 		if (killerPlayer && TrackerController.dontTrack(killer))
 			return;
-		if (ignoreEntities.contains(killer) || ignoreEntities.contains(targetEntity))
+		if (ignoreEntities.contains(killer) || ignoreEntities.contains(targetEntity) ||
+                ignoreEntities.contains(target))
 			return;
 		/// Decide what to do
 		if (targetPlayer && killerPlayer){
