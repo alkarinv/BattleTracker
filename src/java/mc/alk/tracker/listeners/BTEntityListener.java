@@ -148,9 +148,11 @@ public class BTEntityListener implements Listener{
 			else
 				killer = lastDamageCause.getCause().name();
 		}
+        if (killer == null)
+            killer = UNKNOWN;
 		if (killerPlayer && TrackerController.dontTrack(killer))
 			return;
-		if (ignoreEntities.contains(killer) || ignoreEntities.contains(targetEntity) ||
+		if (ignoreEntities.contains(killer) || ignoreEntities.contains(targetEntity.toString()) ||
                 ignoreEntities.contains(target))
 			return;
 		/// Decide what to do
