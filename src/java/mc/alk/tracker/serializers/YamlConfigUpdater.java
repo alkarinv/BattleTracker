@@ -1,7 +1,7 @@
 package mc.alk.tracker.serializers;
 
-import mc.alk.plugin.updater.v1r5.FileUpdater;
-import mc.alk.plugin.updater.v1r5.Version;
+import mc.alk.plugin.updater.v1r6.FileUpdater;
+import mc.alk.plugin.updater.v1r6.Version;
 import mc.alk.tracker.Tracker;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -29,6 +29,9 @@ public class YamlConfigUpdater {
             newVersion = new Version("1.0.3");
             if (curVersion.compareTo(newVersion) < 0){
                 curVersion = updateTo1Point03(configFile,backupDir, curVersion, newVersion);}
+            newVersion = new Version("1.0.4");
+            if (curVersion.compareTo(newVersion) < 0){
+                curVersion = updateTo1Point04(configFile,backupDir, curVersion, newVersion);}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
@@ -74,6 +77,24 @@ public class YamlConfigUpdater {
         fu.replace(".*version:.*", "version: 1.0.3","");
         fu.addBefore(".*showBukkitPVPMessages:.*", "",
                 "autoUpdate: true ## auto update to newer versions found on bukkit");
+        return fu.update();
+    }
+    private Version updateTo1Point04(File oldFile, File backupDir, Version newVersion, Version oldVersion) throws IOException {
+        FileUpdater fu = new FileUpdater(oldFile,backupDir,newVersion,oldVersion);
+        fu.replace(".*version:.*", "version: 1.0.4");
+        fu.replace("autoUpdate:.*",
+                "# Updates will be retrieved from the latest plugin on the bukkit site. Valid Options : none, release, beta, all",
+                "# none (don't auto update)",
+                "# release (only get release versions, ignore beta and alpha)",
+                "# beta (get release and beta versions, ignore alpha)",
+                "# all (get all new updates)",
+                "autoUpdate: release",
+                "",
+                "# show newer versions. Valid Options: none, console, ops",
+                "# none (don't show new versions)",
+                "# console (show only to console log on startup)",
+                "# ops (announce to ops on join, will only show this message once per server start)",
+                "announceUpdate: console");
         return fu.update();
     }
 }

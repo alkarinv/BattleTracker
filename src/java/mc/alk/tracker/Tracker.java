@@ -1,6 +1,6 @@
 package mc.alk.tracker;
 
-import mc.alk.plugin.updater.v1r5.PluginUpdater;
+import mc.alk.plugin.updater.v1r6.PluginUpdater;
 import mc.alk.tracker.controllers.ConfigController;
 import mc.alk.tracker.controllers.MessageController;
 import mc.alk.tracker.controllers.SignController;
@@ -18,6 +18,7 @@ import mc.alk.tracker.serializers.YamlConfigUpdater;
 import mc.alk.tracker.serializers.YamlMessageUpdater;
 import mc.alk.v1r7.core.MCPlugin;
 import mc.alk.v1r7.core.Version;
+import mc.battleplugins.api.BattlePluginsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
@@ -53,7 +54,9 @@ public class Tracker extends MCPlugin{
 		getCommand("btpvp").setExecutor(new TrackerExecutor(getInterface(Defaults.PVP_INTERFACE)));
 		getCommand("btpve").setExecutor(new TrackerExecutor(getInterface(Defaults.PVE_INTERFACE)));
 
-		BTPluginListener.loadPlugins();
+        new BattlePluginsAPI(this);
+        PluginUpdater.update(this, bukkitId, this.getFile(), Defaults.AUTO_UPDATE,Defaults.ANNOUNCE_UPDATE);
+        BTPluginListener.loadPlugins();
 	}
 
 	@Override
@@ -111,7 +114,6 @@ public class Tracker extends MCPlugin{
 				}
 			}, 20, 1000);
 		}
-        PluginUpdater.announceNewerAndDownloadIfNeeded(this, bukkitId, this.getFile(), Defaults.AUTO_UPDATE);
 	}
 
 	public static Tracker getSelf() {

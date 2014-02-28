@@ -1,5 +1,7 @@
 package mc.alk.tracker.controllers;
 
+import mc.alk.plugin.updater.v1r6.PluginUpdater.AnnounceUpdateOption;
+import mc.alk.plugin.updater.v1r6.PluginUpdater.UpdateOption;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.listeners.BTEntityListener;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -40,7 +42,11 @@ public class ConfigController {
 		Defaults.MSG_TOP_HEADER = config.getString("topHeaderMsg",Defaults.MSG_TOP_HEADER);
 		Defaults.MSG_TOP_BODY = config.getString("topBodyMsg",Defaults.MSG_TOP_BODY);
 		Defaults.USE_SIGNS = config.getBoolean("useSigns",Defaults.USE_SIGNS);
-        Defaults.AUTO_UPDATE = config.getBoolean("autoUpdate", Defaults.AUTO_UPDATE);
+        UpdateOption o = UpdateOption.fromString(config.getString("autoUpdate", "none"));
+        Defaults.AUTO_UPDATE =  o != null ? o : UpdateOption.NONE;
+        AnnounceUpdateOption ao = AnnounceUpdateOption.fromString(config.getString("announceUpdate", "none"));
+        Defaults.ANNOUNCE_UPDATE =  ao != null ? ao : AnnounceUpdateOption.NONE;
+
         BTEntityListener.setIgnoreEntities(config.getStringList("ignoreEntities"));
 		BTEntityListener.setIgnoreWorlds(config.getStringList("ignoreWorlds"));
 	}

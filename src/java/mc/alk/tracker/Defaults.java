@@ -1,5 +1,8 @@
 package mc.alk.tracker;
 
+import mc.alk.plugin.updater.v1r6.PluginUpdater.AnnounceUpdateOption;
+import mc.alk.plugin.updater.v1r6.PluginUpdater.UpdateOption;
+
 public class Defaults {
 	public static final int SAVE_EVERY_X_SECONDS = 200;
 
@@ -31,5 +34,7 @@ public class Defaults {
 
     public static boolean USE_SIGNS = true;
 
-    public static boolean AUTO_UPDATE = true;
+    public static UpdateOption AUTO_UPDATE = UpdateOption.RELEASE;
+    public static AnnounceUpdateOption ANNOUNCE_UPDATE = AnnounceUpdateOption.CONSOLE;
+
 }
