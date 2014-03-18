@@ -1,13 +1,12 @@
 package mc.alk.tracker.controllers;
 
+import mc.alk.tracker.Tracker;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import mc.alk.tracker.Tracker;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 
 public class TrackerController {

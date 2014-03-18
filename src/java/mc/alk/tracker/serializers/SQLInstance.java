@@ -1,5 +1,16 @@
 package mc.alk.tracker.serializers;
 
+import mc.alk.tracker.objects.PlayerStat;
+import mc.alk.tracker.objects.Stat;
+import mc.alk.tracker.objects.StatType;
+import mc.alk.tracker.objects.TeamStat;
+import mc.alk.tracker.objects.VersusRecords;
+import mc.alk.tracker.objects.VersusRecords.VersusRecord;
+import mc.alk.tracker.objects.WLT;
+import mc.alk.tracker.objects.WLTRecord;
+import mc.alk.v1r7.serializers.SQLSerializer;
+import mc.alk.v1r7.util.Log;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -11,17 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
-import mc.alk.tracker.objects.PlayerStat;
-import mc.alk.tracker.objects.Stat;
-import mc.alk.tracker.objects.StatType;
-import mc.alk.tracker.objects.TeamStat;
-import mc.alk.tracker.objects.VersusRecords;
-import mc.alk.tracker.objects.VersusRecords.VersusRecord;
-import mc.alk.tracker.objects.WLT;
-import mc.alk.tracker.objects.WLTRecord;
-import mc.alk.v1r7.serializers.SQLSerializer;
-import mc.alk.v1r7.util.Log;
 
 
 public class SQLInstance extends SQLSerializer{
@@ -44,8 +44,10 @@ public class SQLInstance extends SQLSerializer{
 	static final public String TEAMID = "ID";
 	static final public String ID1 = "ID1";
 	static final public String ID2 = "ID2";
-	static final public String WINS= "Wins";
-	static final public String LOSSES = "Losses";
+    static final public String WINS= "Wins";
+    static final public String LOSSES = "Losses";
+    static final public String KILLS= "Kills";
+    static final public String DEATHS = "Deaths";
 	static final public String WLTIE = "WLTIE";
 	static final public String TIES = "Ties";
 	static final public String STREAK = "Streak";
@@ -108,8 +110,10 @@ public class SQLInstance extends SQLSerializer{
 		create_overall_table = "CREATE TABLE IF NOT EXISTS " + OVERALL_TABLE +" ("+
 				TEAMID + " VARCHAR(" + TEAM_ID_LENGTH +") NOT NULL ,"+
 				NAME + " VARCHAR(" + TEAM_NAME_LENGTH +") ,"+
-				WINS + " INTEGER UNSIGNED ," +
-				LOSSES + " INTEGER UNSIGNED," +
+                WINS + " INTEGER UNSIGNED ," +
+                LOSSES + " INTEGER UNSIGNED," +
+                KILLS + " INTEGER UNSIGNED ," +
+                DEATHS + " INTEGER UNSIGNED," +
 				TIES + " INTEGER UNSIGNED," +
 				STREAK + " INTEGER UNSIGNED," +
 				MAXSTREAK + " INTEGER UNSIGNED," +
@@ -214,11 +218,11 @@ public class SQLInstance extends SQLSerializer{
 
 			save_members = "insert or ignore into " + MEMBER_TABLE + " VALUES(?,?) ";
 			truncate_all_tables = "drop table " +OVERALL_TABLE+"; drop table " + VERSUS_TABLE+"; drop table "+INDIVIDUAL_TABLE;
-
 		}
-		if (shouldUpdateTo1point0()){
-			updateTo1Point0();
-		}
+        if (shouldUpdateTo1point0()){
+            updateTo1Point0();}
+        if (shouldUpdateTo1point1()){
+            updateTo1Point1();}
 		try {
 			createTable(VERSUS_TABLE, create_versus_table, create_versus_table_idx);
 
@@ -580,10 +584,21 @@ public class SQLInstance extends SQLSerializer{
 	public boolean shouldUpdateTo1point0() {
 		return hasTable(OVERALL_TABLE) && !hasColumn(OVERALL_TABLE,FLAGS);
 	}
+    public boolean shouldUpdateTo1point1() {
+        return !hasColumn(OVERALL_TABLE,KILLS);
+    }
 
 	private void updateTo1Point0() {
 		Log.warn("[BattleTracker] updating database to 1.0");
 		String alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+FLAGS+" INTEGER DEFAULT 0 ";
 		executeUpdate(alter);
 	}
+
+    private void updateTo1Point1() {
+        Log.warn("[BattleTracker] updating database to 1.1");
+        String alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+KILLS+" INTEGER DEFAULT 0 ";
+        executeUpdate(alter);
+        alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+DEATHS+" INTEGER DEFAULT 0 ";
+        executeUpdate(alter);
+    }
 }

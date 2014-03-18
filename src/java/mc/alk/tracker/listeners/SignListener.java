@@ -87,7 +87,7 @@ public class SignListener implements Listener{
 		}
 		if (ss == null){
 			return;}
-		if (!event.getPlayer().hasPermission(Defaults.ADMIN_PERM)){
+		if (!event.getPlayer().hasPermission(Defaults.ADMIN_PERM) && !event.getPlayer().isOp()){
 			MessageController.sendMessage(event.getPlayer(), "&cYou don't have perms to create top signs");
 			cancelSignPlace(event, block);
 			return;

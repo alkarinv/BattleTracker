@@ -1,6 +1,14 @@
-version: 1.0.2
+version: 1.0.4
 
-autoUpdate: true ## auto update to newer versions found on bukkit
+# Updates will be retrieved from the latest plugin on the bukkit site. Valid Options : none, release, beta, all
+# none: (don't auto update), release: (only get release version, ignore beta and alpha)
+# beta: (get release and beta versions, ignore alpha), all: (get all new updates)
+autoUpdate: release
+
+# show newer versions. Valid Options: none, console, ops
+# none: (don't show new versions), console: (show only to console log on startup)
+# ops (announce to ops on join, will only show this message once per server start)
+announceUpdate: console
 
 showBukkitPVPMessages: false # turn on and off normal bukkit death messages for pvp
 showBukkitPVEMessages: false # turn on and off normal bukkit death messages for pve

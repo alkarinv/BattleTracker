@@ -295,17 +295,19 @@ public class SignController {
 			}
 		}
 
-		private String formatStatLine(String name, int val, int curTop) {
-			StringBuilder sb = new StringBuilder();
-			String sval = val +"";
-			int length = intStringLength(curTop+1) + sval.length() + 1; // 1 delimiters
-			if (name.length() + length > 16){
-				name = name.substring(0, Math.min(name.length(), length));
-			}
-			String spacing = StringUtils.repeat(" ", 15-(length + name.length()));
-			sb.append((curTop+1)+"."+ name+ spacing +sval);
-			return sb.toString();
-		}
+        private String formatStatLine(String name, int val, int curTop) {
+            StringBuilder sb = new StringBuilder(15);
+            sb.append(curTop + 1).append(".");
+            int length = sb.length() + intStringLength(val) + 1;
+            if (name.length() + length > 15){
+                sb.append(name.substring(0, 15-length )).
+                        append("~").append(String.valueOf(val));
+            } else {
+                sb.append(name).append(StringUtils.repeat(" ", 16 - length - name.length())).
+                        append(String.valueOf(val));
+            }
+            return sb.toString();
+        }
 	}
 
 	public static int intStringLength(int i) {
