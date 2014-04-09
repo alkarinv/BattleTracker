@@ -1,9 +1,5 @@
 package mc.alk.tracker.objects;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.controllers.TrackerImpl;
 import mc.alk.tracker.events.MaxRatingChangeEvent;
@@ -13,8 +9,11 @@ import mc.alk.tracker.ranking.EloCalculator;
 import mc.alk.tracker.util.Cache.CacheObject;
 import mc.alk.tracker.util.Util;
 import mc.alk.v1r7.util.Log;
-
 import org.bukkit.entity.Player;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 
 public abstract class Stat extends CacheObject<String,Stat>{
@@ -93,7 +92,9 @@ public abstract class Stat extends CacheObject<String,Stat>{
 	public void setMaxStreak(int maxStreak) {this.maxStreak = maxStreak;setDirty();}
 	public void setMaxRating(int maxRating) {this.maxRating = maxRating;setDirty();}
 
-	public int getRating() {return (int) rating;}
+	public int getRating() {
+        return (int) rating;
+    }
 	public int getMaxRating() {return (int) maxRating;}
 
 	public void setRating(float rating){

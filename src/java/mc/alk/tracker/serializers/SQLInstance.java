@@ -46,8 +46,8 @@ public class SQLInstance extends SQLSerializer{
 	static final public String ID2 = "ID2";
     static final public String WINS= "Wins";
     static final public String LOSSES = "Losses";
-    static final public String KILLS= "Kills";
-    static final public String DEATHS = "Deaths";
+//    static final public String KILLS= "Kills";
+//    static final public String DEATHS = "Deaths";
 	static final public String WLTIE = "WLTIE";
 	static final public String TIES = "Ties";
 	static final public String STREAK = "Streak";
@@ -112,8 +112,8 @@ public class SQLInstance extends SQLSerializer{
 				NAME + " VARCHAR(" + TEAM_NAME_LENGTH +") ,"+
                 WINS + " INTEGER UNSIGNED ," +
                 LOSSES + " INTEGER UNSIGNED," +
-                KILLS + " INTEGER UNSIGNED ," +
-                DEATHS + " INTEGER UNSIGNED," +
+//                KILLS + " INTEGER UNSIGNED ," +
+//                DEATHS + " INTEGER UNSIGNED," +
 				TIES + " INTEGER UNSIGNED," +
 				STREAK + " INTEGER UNSIGNED," +
 				MAXSTREAK + " INTEGER UNSIGNED," +
@@ -221,12 +221,12 @@ public class SQLInstance extends SQLSerializer{
 		}
         if (shouldUpdateTo1point0()){
             updateTo1Point0();}
-        if (shouldUpdateTo1point1()){
-            updateTo1Point1();}
+//        if (shouldUpdateTo1point1()){
+//            updateTo1Point1();}
 		try {
 			createTable(VERSUS_TABLE, create_versus_table, create_versus_table_idx);
 
-			createTable(OVERALL_TABLE, create_overall_table);
+			createTable(OVERALL_TABLE, create_overall_table );
 			createTable(INDIVIDUAL_TABLE,create_individual_table,create_individual_table_idx);
 			createTable(MEMBER_TABLE,create_member_table,create_member_table_idx);
 		} catch (Exception e){
@@ -584,21 +584,21 @@ public class SQLInstance extends SQLSerializer{
 	public boolean shouldUpdateTo1point0() {
 		return hasTable(OVERALL_TABLE) && !hasColumn(OVERALL_TABLE,FLAGS);
 	}
-    public boolean shouldUpdateTo1point1() {
-        return !hasColumn(OVERALL_TABLE,KILLS);
-    }
+//    public boolean shouldUpdateTo1point1() {
+//        return !hasColumn(OVERALL_TABLE,KILLS);
+//    }
 
 	private void updateTo1Point0() {
 		Log.warn("[BattleTracker] updating database to 1.0");
 		String alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+FLAGS+" INTEGER DEFAULT 0 ";
 		executeUpdate(alter);
 	}
-
-    private void updateTo1Point1() {
-        Log.warn("[BattleTracker] updating database to 1.1");
-        String alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+KILLS+" INTEGER DEFAULT 0 ";
-        executeUpdate(alter);
-        alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+DEATHS+" INTEGER DEFAULT 0 ";
-        executeUpdate(alter);
-    }
+//
+//    private void updateTo1Point1() {
+//        Log.warn("[BattleTracker] updating database to 1.1");
+//        String alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+KILLS+" INTEGER DEFAULT 0 ";
+//        executeUpdate(alter);
+//        alter = "ALTER TABLE "+OVERALL_TABLE+" ADD "+DEATHS+" INTEGER DEFAULT 0 ";
+//        executeUpdate(alter);
+//    }
 }

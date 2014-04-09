@@ -1,9 +1,5 @@
 package mc.alk.tracker;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import mc.alk.tracker.objects.PlayerStat;
 import mc.alk.tracker.objects.Stat;
 import mc.alk.tracker.objects.StatType;
@@ -12,10 +8,13 @@ import mc.alk.tracker.objects.WLT;
 import mc.alk.tracker.objects.WLTRecord;
 import mc.alk.tracker.ranking.RatingCalculator;
 import mc.alk.v1r7.core.Version;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 
 
@@ -142,7 +141,7 @@ public interface TrackerInterface{
 
 	/**
 	 * Get the rank of this player/team
-	 * @param sender
+	 * @param name
 	 * @return
 	 */
 	public Integer getRank(String name);
@@ -216,7 +215,6 @@ public interface TrackerInterface{
 	/**
 	 * Immediately save all records (they usually get saved at an appropriate time)
 	 * and empty the cache
-	 * @param stats
 	 */
 	public void flush();
 

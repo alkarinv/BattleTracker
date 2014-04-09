@@ -1,16 +1,17 @@
 package mc.alk.tracker.ranking;
 
-import java.util.Collection;
-
 import mc.alk.tracker.objects.Stat;
+
+import java.util.Collection;
 
 public class EloCalculator implements RatingCalculator {
 	public static final float MIN_ELO = 100;
-	public static final float DEFAULT_ELO = 1250;
+	public static float DEFAULT_ELO = 1250;
 
 	float defaultElo, spread;
 
-	public String getName(){
+	@Override
+    public String getName(){
 		return "Elo";
 	}
 	private float eloChange(Stat p1, Stat p2, float result){
@@ -23,7 +24,8 @@ public class EloCalculator implements RatingCalculator {
 		return eloChange;
 	}
 
-	public void changeRatings(Stat p1, Stat p2, boolean tie){
+	@Override
+    public void changeRatings(Stat p1, Stat p2, boolean tie){
 		float result = tie ? 0.5f : 1.0f;
 		final float eloChange = eloChange(p1,p2,result);
 		final float p1elo = p1.getRating()+eloChange;
@@ -32,7 +34,8 @@ public class EloCalculator implements RatingCalculator {
 		p2.setRating(p2elo > MIN_ELO? p2elo : MIN_ELO);
 	}
 
-	public void changeRatings(Stat ts1, Collection<Stat> teamstats, boolean tie) {
+	@Override
+    public void changeRatings(Stat ts1, Collection<Stat> teamstats, boolean tie) {
 		float result = tie ? 0.5f : 1.0f;
 		double eloWinner = 0;
 		double dampening = teamstats.size() == 1 ? 1 : teamstats.size() / 2.0D;
@@ -62,11 +65,13 @@ public class EloCalculator implements RatingCalculator {
 		this.spread = spread;
 	}
 
-	public void setDefaultRating(float elo) {
+	@Override
+    public void setDefaultRating(float elo) {
 		defaultElo = elo;
 	}
 
-	public float getDefaultRating() {
+	@Override
+    public float getDefaultRating() {
 		return defaultElo;
 	}
 }

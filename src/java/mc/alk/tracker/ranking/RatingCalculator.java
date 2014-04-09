@@ -1,8 +1,8 @@
 package mc.alk.tracker.ranking;
 
-import java.util.Collection;
-
 import mc.alk.tracker.objects.Stat;
+
+import java.util.Collection;
 
 public interface RatingCalculator {
 
@@ -16,7 +16,7 @@ public interface RatingCalculator {
 	 * Set the default rating
 	 * @param initialRating
 	 */
-	public void setDefaultRating(float initialRanking);
+	public void setDefaultRating(float initialRating);
 	/**
 	 * Get the default rating
 	 * @return

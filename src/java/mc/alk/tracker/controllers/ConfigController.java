@@ -1,7 +1,7 @@
 package mc.alk.tracker.controllers;
 
-import mc.alk.plugin.updater.v1r6.PluginUpdater.AnnounceUpdateOption;
-import mc.alk.plugin.updater.v1r6.PluginUpdater.UpdateOption;
+import mc.alk.plugin.updater.PluginUpdater.AnnounceUpdateOption;
+import mc.alk.plugin.updater.PluginUpdater.UpdateOption;
 import mc.alk.tracker.Defaults;
 import mc.alk.tracker.listeners.BTEntityListener;
 import org.bukkit.configuration.file.YamlConfiguration;

@@ -47,8 +47,7 @@ public class BattleTrackerExecutor extends CustomCommandExecutor {
 		} else {
 			sendMessage(sender, "&cDebugging couldnt find section &6"+ section);
 			sendMessage(sender, "&cValid sections: &6msg");
-			return;
-		}
+        }
 	}
 
 	@MCCommand(cmds={"spawn"},op=true, usage="addkill <player1> <player2>: this is a debugging method")
